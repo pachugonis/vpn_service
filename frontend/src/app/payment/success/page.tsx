@@ -1,21 +1,53 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function PaymentSuccessPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center px-4">
-      <div className="text-center max-w-md">
-        <div className="text-6xl mb-6">&#10003;</div>
-        <h1 className="text-3xl font-bold mb-4">Payment Successful!</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">
-          Your VPN subscription is now active. Go to your dashboard to get connection configs.
-        </p>
-        <Link
-          href="/dashboard"
-          className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+    <main className="min-h-screen flex items-center justify-center px-6 bg-grid">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6 }}
+        className="text-center max-w-md"
+      >
+        {/* Animated checkmark */}
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          className="w-20 h-20 rounded-full bg-neon-green/10 border border-neon-green/20 flex items-center justify-center mx-auto mb-8"
         >
-          Go to Dashboard
+          <motion.svg
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            width="36"
+            height="36"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-neon-green"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </motion.svg>
+        </motion.div>
+
+        <h1 className="font-display font-bold text-3xl text-white mb-3">
+          Оплата прошла!
+        </h1>
+        <p className="text-slate-400 mb-8 leading-relaxed">
+          Ваша VPN-подписка активирована. Перейдите в личный кабинет, чтобы
+          получить конфигурации для подключения.
+        </p>
+        <Link href="/dashboard" className="btn-solid !px-8 !py-3.5">
+          Перейти в кабинет
         </Link>
-      </div>
+      </motion.div>
     </main>
   );
 }
