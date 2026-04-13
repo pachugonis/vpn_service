@@ -18,6 +18,11 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
+    @property
+    def is_admin(self) -> bool:
+        from app.config import settings
+        return bool(settings.ADMIN_EMAIL) and self.email == settings.ADMIN_EMAIL
+
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")
     payments = relationship("Payment", back_populates="user", lazy="selectin")
     server_configs = relationship("UserServerConfig", back_populates="user", lazy="selectin")

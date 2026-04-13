@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     # Frontend
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # Admin
+    ADMIN_EMAIL: str = ""
+
     # Email
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587

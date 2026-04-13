@@ -1,18 +1,60 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { api } from "@/lib/api";
+
+interface Me {
+  id: number;
+  email: string;
+  is_active: boolean;
+  is_admin: boolean;
+}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [me, setMe] = useState<Me | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      if (typeof window === "undefined") return;
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMe(null);
+        return;
+      }
+      try {
+        setMe(await api.me());
+      } catch {
+        localStorage.removeItem("token");
+        setMe(null);
+      }
+    };
+    load();
+    const onAuth = () => load();
+    window.addEventListener("auth-change", onAuth);
+    window.addEventListener("storage", onAuth);
+    return () => {
+      window.removeEventListener("auth-change", onAuth);
+      window.removeEventListener("storage", onAuth);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    api.logout();
+    setMobileOpen(false);
+    router.push("/");
+  };
 
   return (
     <motion.nav
@@ -68,15 +110,42 @@ export default function Navbar() {
             Тарифы
           </Link>
           <div className="h-4 w-px bg-white/10" />
-          <Link
-            href="/auth"
-            className="text-sm text-slate-400 hover:text-white transition-colors"
-          >
-            Войти
-          </Link>
-          <Link href="/pricing" className="btn-solid text-sm !py-2 !px-5">
-            Подключить
-          </Link>
+          {me ? (
+            <>
+              {me.is_admin && (
+                <Link
+                  href="/admin"
+                  className="text-sm text-neon-cyan hover:text-white transition-colors"
+                >
+                  Админка
+                </Link>
+              )}
+              <Link
+                href="/dashboard"
+                className="text-sm text-slate-400 hover:text-white transition-colors"
+              >
+                Кабинет
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-sm text-slate-400 hover:text-white transition-colors"
+              >
+                Выйти
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/auth"
+                className="text-sm text-slate-400 hover:text-white transition-colors"
+              >
+                Войти
+              </Link>
+              <Link href="/pricing" className="btn-solid text-sm !py-2 !px-5">
+                Подключить
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile burger */}
@@ -120,7 +189,14 @@ export default function Navbar() {
                 { href: "/#features", label: "Возможности" },
                 { href: "/#servers", label: "Серверы" },
                 { href: "/pricing", label: "Тарифы" },
-                { href: "/auth", label: "Войти" },
+                ...(me
+                  ? [
+                      ...(me.is_admin
+                        ? [{ href: "/admin", label: "Админка" }]
+                        : []),
+                      { href: "/dashboard", label: "Кабинет" },
+                    ]
+                  : [{ href: "/auth", label: "Войти" }]),
               ].map((link) => (
                 <Link
                   key={link.href}
@@ -131,13 +207,22 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              <Link
-                href="/pricing"
-                onClick={() => setMobileOpen(false)}
-                className="btn-solid block text-center !py-2.5 mt-2"
-              >
-                Подключить
-              </Link>
+              {me ? (
+                <button
+                  onClick={handleLogout}
+                  className="block text-slate-300 hover:text-white transition-colors"
+                >
+                  Выйти
+                </button>
+              ) : (
+                <Link
+                  href="/pricing"
+                  onClick={() => setMobileOpen(false)}
+                  className="btn-solid block text-center !py-2.5 mt-2"
+                >
+                  Подключить
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

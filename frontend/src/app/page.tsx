@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { api, Plan } from "@/lib/api";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -104,36 +106,33 @@ const servers = [
   },
 ];
 
-const plans = [
-  {
-    name: "1 месяц",
-    price: "299",
-    priceUsd: "3",
-    period: "/мес",
-    duration: "30 дней",
-    popular: false,
-  },
-  {
-    name: "3 месяца",
-    price: "249",
-    priceUsd: "2.5",
-    period: "/мес",
-    duration: "90 дней",
-    popular: true,
-    save: "-17%",
-  },
-  {
-    name: "1 год",
-    price: "199",
-    priceUsd: "2",
-    period: "/мес",
-    duration: "365 дней",
-    popular: false,
-    save: "-33%",
-  },
+const fallbackPlans: Plan[] = [
+  { id: 1, name: "1 месяц", duration_days: 30, price_rub: 299, traffic_gb: null },
+  { id: 2, name: "3 месяца", duration_days: 90, price_rub: 749, traffic_gb: null },
+  { id: 3, name: "1 год", duration_days: 365, price_rub: 2388, traffic_gb: null },
 ];
 
+function monthlyPrice(plan: Plan): number {
+  const months = Math.max(1, Math.round(plan.duration_days / 30));
+  return Math.round(plan.price_rub / months);
+}
+
 export default function Home() {
+  const [plans, setPlans] = useState<Plan[]>(fallbackPlans);
+
+  useEffect(() => {
+    api
+      .getPlans()
+      .then((p) => p.length > 0 && setPlans(p))
+      .catch(() => {});
+  }, []);
+
+  const baseMonthly = plans.length ? monthlyPrice(plans[0]) : 0;
+  const minMonthly = plans.length
+    ? Math.min(...plans.map(monthlyPrice))
+    : 0;
+  const popularPlan = plans.length === 3 ? plans[1] : null;
+
   return (
     <main className="min-h-screen flex flex-col bg-grid">
       <Navbar />
@@ -175,7 +174,7 @@ export default function Home() {
           >
             Быстрый VPN с серверами в Европе. Современный протокол, нулевые логи,
             моментальное подключение. От{" "}
-            <span className="text-white font-semibold">199 ₽/мес</span>.
+            <span className="text-white font-semibold">{minMonthly} ₽/мес</span>.
           </motion.p>
 
           <motion.div
@@ -389,18 +388,25 @@ export default function Home() {
             viewport={{ once: true, margin: "-50px" }}
             className="grid md:grid-cols-3 gap-5"
           >
-            {plans.map((p, i) => (
+            {plans.map((p, i) => {
+              const isPopular = popularPlan && p.id === popularPlan.id;
+              const monthly = monthlyPrice(p);
+              const save =
+                i > 0 && baseMonthly > 0
+                  ? `-${Math.round(((baseMonthly - monthly) / baseMonthly) * 100)}%`
+                  : null;
+              return (
               <motion.div
-                key={p.name}
+                key={p.id}
                 variants={fadeUp}
                 custom={i}
                 className={`glass-card p-8 flex flex-col relative ${
-                  p.popular
+                  isPopular
                     ? "!border-neon-cyan/30 shadow-[0_0_40px_rgba(0,229,255,0.06)]"
                     : ""
                 }`}
               >
-                {p.popular && (
+                {isPopular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-neon-cyan to-neon-blue text-xs font-bold text-void-950 tracking-wide">
                     ПОПУЛЯРНЫЙ
                   </div>
@@ -411,22 +417,22 @@ export default function Home() {
                     <h3 className="font-display font-semibold text-white text-lg">
                       {p.name}
                     </h3>
-                    {p.save && (
+                    {save && (
                       <span className="px-2 py-0.5 rounded-md bg-neon-green/10 text-neon-green text-xs font-bold">
-                        {p.save}
+                        {save}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500">{p.duration}</p>
+                  <p className="text-xs text-slate-500">{p.duration_days} дней</p>
                 </div>
 
                 <div className="mb-8">
                   <span className="font-display font-extrabold text-4xl text-white">
-                    {p.price} ₽
+                    {monthly} ₽
                   </span>
-                  <span className="text-slate-500 text-sm">{p.period}</span>
+                  <span className="text-slate-500 text-sm">/мес</span>
                   <div className="text-xs text-slate-600 mt-1 font-mono">
-                    ${p.priceUsd}/мес
+                    итого {p.price_rub} ₽
                   </div>
                 </div>
 
@@ -458,13 +464,14 @@ export default function Home() {
                 </ul>
 
                 <Link
-                  href={`/auth?redirect=/payment&plan=${i + 1}`}
-                  className={p.popular ? "btn-solid w-full" : "btn-neon w-full"}
+                  href={`/auth?redirect=/payment&plan=${p.id}`}
+                  className={isPopular ? "btn-solid w-full" : "btn-neon w-full"}
                 >
                   Выбрать
                 </Link>
               </motion.div>
-            ))}
+              );
+            })}
           </motion.div>
         </div>
       </section>

@@ -12,3 +12,5 @@ redis_data/
 nginx/ssl/*.pem
 nginx/ssl/*.key
 .venv/
+celerybeat-schedule
+next-env.d.ts

@@ -29,7 +29,6 @@ export interface Plan {
   name: string;
   duration_days: number;
   price_rub: number;
-  price_usd: number;
   traffic_gb: number | null;
 }
 
@@ -70,10 +69,23 @@ export const api = {
       body: JSON.stringify({ email, password }),
     });
     localStorage.setItem("token", data.access_token);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("auth-change"));
+    }
     return data;
   },
 
-  me: () => request<{ id: number; email: string; is_active: boolean }>("/auth/me"),
+  logout: () => {
+    localStorage.removeItem("token");
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("auth-change"));
+    }
+  },
+
+  me: () =>
+    request<{ id: number; email: string; is_active: boolean; is_admin: boolean }>(
+      "/auth/me"
+    ),
 
   getPlans: () => request<Plan[]>("/subscriptions/plans"),
 
@@ -97,4 +109,73 @@ export const api = {
       "/payments/btcpay/create",
       { method: "POST", body: JSON.stringify({ plan_id: planId }) }
     ),
+
+  admin: {
+    listServers: () => request<AdminServer[]>("/admin/servers"),
+    createServer: (data: Partial<AdminServer> & { password: string }) =>
+      request<AdminServer>("/admin/servers", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    updateServer: (id: number, data: Partial<AdminServer>) =>
+      request<AdminServer>(`/admin/servers/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    deleteServer: (id: number) =>
+      request<void>(`/admin/servers/${id}`, { method: "DELETE" }),
+
+    listPlans: () => request<AdminPlan[]>("/admin/plans"),
+    createPlan: (data: Partial<AdminPlan>) =>
+      request<AdminPlan>("/admin/plans", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    updatePlan: (id: number, data: Partial<AdminPlan>) =>
+      request<AdminPlan>(`/admin/plans/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    deletePlan: (id: number) =>
+      request<void>(`/admin/plans/${id}`, { method: "DELETE" }),
+
+    listUsers: () => request<AdminUser[]>("/admin/users"),
+    updateUser: (id: number, data: { is_active?: boolean }) =>
+      request<AdminUser>(`/admin/users/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    deleteUser: (id: number) =>
+      request<void>(`/admin/users/${id}`, { method: "DELETE" }),
+  },
 };
+
+export interface AdminServer {
+  id: number;
+  name: string;
+  location: string;
+  flag_emoji: string | null;
+  url: string;
+  username: string;
+  password?: string;
+  inbound_id: number;
+  is_active: boolean;
+  load_pct: number;
+}
+
+export interface AdminPlan {
+  id: number;
+  name: string;
+  duration_days: number;
+  price_rub: number;
+  traffic_gb: number | null;
+  is_active: boolean;
+}
+
+export interface AdminUser {
+  id: number;
+  email: string;
+  is_active: boolean;
+  is_admin: boolean;
+  created_at: string;
+}

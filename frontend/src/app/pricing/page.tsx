@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { api, Plan } from "@/lib/api";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -17,9 +17,9 @@ const fadeUp = {
 };
 
 const fallbackPlans: Plan[] = [
-  { id: 1, name: "1 месяц", duration_days: 30, price_rub: 299, price_usd: 3, traffic_gb: null },
-  { id: 2, name: "3 месяца", duration_days: 90, price_rub: 749, price_usd: 7.5, traffic_gb: null },
-  { id: 3, name: "1 год", duration_days: 365, price_rub: 2388, price_usd: 24, traffic_gb: null },
+  { id: 1, name: "1 месяц", duration_days: 30, price_rub: 299, traffic_gb: null },
+  { id: 2, name: "3 месяца", duration_days: 90, price_rub: 749, traffic_gb: null },
+  { id: 3, name: "1 год", duration_days: 365, price_rub: 2388, traffic_gb: null },
 ];
 
 function monthlyPrice(plan: Plan): number {
@@ -29,15 +29,37 @@ function monthlyPrice(plan: Plan): number {
 
 export default function PricingPage() {
   const [plans, setPlans] = useState<Plan[]>(fallbackPlans);
-  const [loading, setLoading] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     api
       .getPlans()
       .then((p) => p.length > 0 && setPlans(p))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const check = () => {
+      if (typeof window === "undefined") return;
+      setIsAuthed(!!localStorage.getItem("token"));
+    };
+    check();
+    window.addEventListener("auth-change", check);
+    window.addEventListener("storage", check);
+    return () => {
+      window.removeEventListener("auth-change", check);
+      window.removeEventListener("storage", check);
+    };
+  }, []);
+
+  const handleSelect = (planId: number) => {
+    if (isAuthed) {
+      router.push(`/payment?plan=${planId}`);
+    } else {
+      router.push(`/auth?redirect=/payment&plan=${planId}`);
+    }
+  };
 
   const bestValue = plans.length === 3 ? plans[1] : null;
 
@@ -131,7 +153,7 @@ export default function PricingPage() {
                     <span className="text-slate-500 text-sm">/мес</span>
                   </div>
                   <div className="text-xs text-slate-600 font-mono mb-8">
-                    Итого: {plan.price_rub} ₽ / ${plan.price_usd}
+                    Итого: {plan.price_rub} ₽
                   </div>
 
                   <ul className="space-y-3 mb-8 flex-1">
@@ -162,12 +184,12 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
-                  <Link
-                    href={`/auth?redirect=/payment&plan=${plan.id}`}
+                  <button
+                    onClick={() => handleSelect(plan.id)}
                     className={isPopular ? "btn-solid w-full" : "btn-neon w-full"}
                   >
                     Выбрать план
-                  </Link>
+                  </button>
                 </motion.div>
               );
             })}
