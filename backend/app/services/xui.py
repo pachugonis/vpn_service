@@ -139,7 +139,7 @@ class XUIClient:
                 if not cookie:
                     return False, "Login: сессионная cookie не получена"
 
-                list_resp = await client.post(
+                list_resp = await client.get(
                     f"{self.base_url}/panel/api/inbounds/list",
                     headers={"Cookie": f"3x-ui={cookie}"},
                 )
