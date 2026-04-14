@@ -9,9 +9,8 @@ from app.models.plan import Plan
 from app.models.subscription import Subscription
 from app.models.user import User
 from app.services.xui_manager import (
-    add_client_to_all_servers,
     remove_client_from_all_servers,
-    update_expiry_on_all_servers,
+    sync_client_to_all_servers,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,6 +37,7 @@ async def activate_subscription(user_id: int, plan_id: int, db: AsyncSession):
     if not user.vpn_uuid:
         user.vpn_uuid = uuid.uuid4()
         db.add(user)
+        await db.flush()
 
     existing_sub = await get_active_subscription(user_id, db)
 
@@ -57,9 +57,11 @@ async def activate_subscription(user_id: int, plan_id: int, db: AsyncSession):
         db.add(existing_sub)
         remaining_days = plan.duration_days
 
-    # Ensure client is present on all active servers (idempotent: insert
-    # skips duplicates, addClient on 3x-ui may no-op for existing uuid).
-    await add_client_to_all_servers(
+    user.is_active = True
+    db.add(user)
+    await db.flush()
+
+    await sync_client_to_all_servers(
         user_id=user_id,
         vpn_uuid=str(user.vpn_uuid),
         email=user.email,
@@ -67,11 +69,6 @@ async def activate_subscription(user_id: int, plan_id: int, db: AsyncSession):
         traffic_gb=plan.traffic_gb or 0,
         db=db,
     )
-    # Push the updated expiry for clients that already existed.
-    await update_expiry_on_all_servers(str(user.vpn_uuid), remaining_days, db)
-
-    user.is_active = True
-    db.add(user)
     logger.info("Subscription activated for user %s, plan %s", user_id, plan_id)
 
 

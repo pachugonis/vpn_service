@@ -88,8 +88,18 @@ class XUIClient:
                 headers=self._get_headers(),
                 json=payload,
             )
-            logger.info("add_client %s -> %s", self.server.name, resp.status_code)
-            return resp.json()
+            logger.info(
+                "add_client %s -> %s %s",
+                self.server.name,
+                resp.status_code,
+                resp.text[:200],
+            )
+            data = resp.json()
+            if not data.get("success", True):
+                raise RuntimeError(
+                    f"3x-ui addClient failed on {self.server.name}: {data.get('msg')}"
+                )
+            return data
 
     async def delete_client(self, vpn_uuid: str) -> dict:
         await self._ensure_auth()
@@ -101,9 +111,19 @@ class XUIClient:
             logger.info("delete_client %s -> %s", self.server.name, resp.status_code)
             return resp.json()
 
-    async def update_client_expiry(self, vpn_uuid: str, expire_days: int) -> dict:
+    async def update_client(
+        self,
+        vpn_uuid: str,
+        email: str,
+        expire_days: int,
+        traffic_gb: int = 0,
+    ) -> dict:
+        """Full-payload update. 3x-ui replaces the client record from the
+        supplied settings, so partial payloads wipe email/flow/traffic and
+        cause 3x-ui to regenerate a random 8-char email."""
         await self._ensure_auth()
         expire_ms = _expiry_ms(expire_days)
+        traffic_bytes = traffic_gb * 1024**3 if traffic_gb else 0
         async with httpx.AsyncClient(verify=False) as client:
             resp = await client.post(
                 f"{self.base_url}/panel/api/inbounds/updateClient/{vpn_uuid}",
@@ -115,14 +135,19 @@ class XUIClient:
                             "clients": [
                                 {
                                     "id": vpn_uuid,
-                                    "expiryTime": expire_ms,
+                                    "email": email,
                                     "enable": True,
+                                    "expiryTime": expire_ms,
+                                    "totalGB": traffic_bytes,
+                                    "limitIp": 0,
+                                    "flow": "xtls-rprx-vision",
                                 }
                             ]
                         }
                     ),
                 },
             )
+            logger.info("update_client %s -> %s %s", self.server.name, resp.status_code, resp.text[:200])
             return resp.json()
 
     async def test_connection(self) -> tuple[bool, str]:
