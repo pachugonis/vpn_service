@@ -61,7 +61,10 @@ services:
     command: celery -A app.tasks.celery_app beat --loglevel=warning
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     env_file: .env
     restart: unless-stopped
     command: node server.js

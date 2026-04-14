@@ -285,14 +285,16 @@ $COMPOSE ps
 
 sleep 5
 log "HTTP healthcheck"
-HTTP_CODE=$(curl -ks -o /dev/null -w '%{http_code}' "https://${API_DOMAIN}/" || echo "000")
+HTTP_CODE=$(curl -ks -o /dev/null -w '%{http_code}' "https://${API_DOMAIN}/")
+HTTP_CODE=${HTTP_CODE:-000}
 if [[ "$HTTP_CODE" =~ ^(200|301|302|404|401)$ ]]; then
     ok "API отвечает (HTTP $HTTP_CODE)"
 else
     warn "API вернул HTTP $HTTP_CODE — проверьте $COMPOSE logs backend"
 fi
 
-FRONT_CODE=$(curl -ks -o /dev/null -w '%{http_code}' "https://${DOMAIN}/" || echo "000")
+FRONT_CODE=$(curl -ks -o /dev/null -w '%{http_code}' "https://${DOMAIN}/")
+FRONT_CODE=${FRONT_CODE:-000}
 if [[ "$FRONT_CODE" =~ ^(200|301|302|404)$ ]]; then
     ok "Frontend отвечает (HTTP $FRONT_CODE)"
 else
