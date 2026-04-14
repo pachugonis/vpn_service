@@ -1,8 +1,12 @@
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.payment import Payment
+from app.models.subscription import Subscription
+from app.models.user_server_config import UserServerConfig
 
 RUB_PER_USD = Decimal("100")
 
@@ -28,6 +32,7 @@ from app.schemas.admin import (
     UserUpdate,
 )
 from app.services.subscription import activate_subscription
+from app.services.xui_manager import remove_client_from_all_servers
 from app.services.xui import XUIClient, XUIServer
 
 
@@ -190,6 +195,16 @@ async def delete_user(
     user = await db.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    if user.vpn_uuid:
+        try:
+            await remove_client_from_all_servers(str(user.vpn_uuid), db)
+        except Exception:
+            pass
+
+    await db.execute(delete(UserServerConfig).where(UserServerConfig.user_id == user_id))
+    await db.execute(delete(Subscription).where(Subscription.user_id == user_id))
+    await db.execute(delete(Payment).where(Payment.user_id == user_id))
     await db.delete(user)
     await db.commit()
 
