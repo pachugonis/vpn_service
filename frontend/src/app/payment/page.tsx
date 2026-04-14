@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
+import Logo from "@/components/Logo";
 
 function PaymentForm() {
   const params = useSearchParams();
@@ -62,14 +63,10 @@ function PaymentForm() {
     <main className="min-h-screen flex flex-col bg-grid">
       {/* Minimal nav */}
       <div className="p-6">
-        <Link href="/" className="flex items-center gap-2.5 w-fit">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-cyan to-neon-blue flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#040810" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </div>
-          <span className="font-display font-bold text-lg text-white">
-            Void<span className="text-neon-cyan">VPN</span>
+        <Link href="/" className="flex items-center gap-2.5 group w-fit">
+          <Logo size={34} className="drop-shadow-[0_0_10px_rgba(34,211,238,0.35)] transition-transform group-hover:scale-105" />
+          <span className="font-display font-bold text-lg tracking-tight">
+            <span className="text-gradient-cyan">КАКОВО</span><span className="text-white">?!</span>
           </span>
         </Link>
       </div>

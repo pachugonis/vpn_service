@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -119,6 +120,8 @@ function monthlyPrice(plan: Plan): number {
 
 export default function Home() {
   const [plans, setPlans] = useState<Plan[]>(fallbackPlans);
+  const [isAuthed, setIsAuthed] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     api
@@ -126,6 +129,28 @@ export default function Home() {
       .then((p) => p.length > 0 && setPlans(p))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const check = () => {
+      if (typeof window === "undefined") return;
+      setIsAuthed(!!localStorage.getItem("token"));
+    };
+    check();
+    window.addEventListener("auth-change", check);
+    window.addEventListener("storage", check);
+    return () => {
+      window.removeEventListener("auth-change", check);
+      window.removeEventListener("storage", check);
+    };
+  }, []);
+
+  const handleSelectPlan = (planId: number) => {
+    if (isAuthed) {
+      router.push(`/payment?plan=${planId}`);
+    } else {
+      router.push(`/auth?redirect=/payment&plan=${planId}`);
+    }
+  };
 
   const baseMonthly = plans.length ? monthlyPrice(plans[0]) : 0;
   const minMonthly = plans.length
@@ -462,12 +487,12 @@ export default function Home() {
                   ))}
                 </ul>
 
-                <Link
-                  href={`/auth?redirect=/payment&plan=${p.id}`}
+                <button
+                  onClick={() => handleSelectPlan(p.id)}
                   className={isPopular ? "btn-solid w-full" : "btn-neon w-full"}
                 >
                   Выбрать
-                </Link>
+                </button>
               </motion.div>
               );
             })}
