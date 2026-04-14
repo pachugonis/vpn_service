@@ -25,13 +25,17 @@ export default function Footer() {
               Сервис
             </h4>
             <ul className="space-y-2.5">
-              {["Тарифы", "Серверы", "Статус"].map((item) => (
-                <li key={item}>
+              {[
+                { label: "Тарифы", href: "/pricing" },
+                { label: "Серверы", href: "/#servers" },
+                { label: "Статус", href: "/#servers" },
+              ].map((item) => (
+                <li key={item.label}>
                   <Link
-                    href="/pricing"
+                    href={item.href}
                     className="text-sm text-slate-500 hover:text-neon-cyan transition-colors"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
