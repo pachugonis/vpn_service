@@ -76,6 +76,8 @@ class XUIClient:
                             "totalGB": traffic_bytes,
                             "limitIp": 0,
                             "flow": "xtls-rprx-vision",
+                            "subId": vpn_uuid,
+                            "tgId": "",
                         }
                     ]
                 }
