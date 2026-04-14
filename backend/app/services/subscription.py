@@ -43,11 +43,10 @@ async def activate_subscription(user_id: int, plan_id: int, db: AsyncSession):
 
     if existing_sub:
         existing_sub.ends_at += timedelta(days=plan.duration_days)
-        remaining_days = (existing_sub.ends_at - datetime.utcnow()).days
-        await update_expiry_on_all_servers(str(user.vpn_uuid), remaining_days, db)
+        remaining_days = max(1, (existing_sub.ends_at - datetime.utcnow()).days)
     else:
         ends_at = datetime.utcnow() + timedelta(days=plan.duration_days)
-        sub = Subscription(
+        existing_sub = Subscription(
             user_id=user_id,
             plan_id=plan_id,
             started_at=datetime.utcnow(),
@@ -55,15 +54,21 @@ async def activate_subscription(user_id: int, plan_id: int, db: AsyncSession):
             is_active=True,
             traffic_gb=plan.traffic_gb,
         )
-        db.add(sub)
-        await add_client_to_all_servers(
-            user_id=user_id,
-            vpn_uuid=str(user.vpn_uuid),
-            email=user.email,
-            expire_days=plan.duration_days,
-            traffic_gb=plan.traffic_gb or 0,
-            db=db,
-        )
+        db.add(existing_sub)
+        remaining_days = plan.duration_days
+
+    # Ensure client is present on all active servers (idempotent: insert
+    # skips duplicates, addClient on 3x-ui may no-op for existing uuid).
+    await add_client_to_all_servers(
+        user_id=user_id,
+        vpn_uuid=str(user.vpn_uuid),
+        email=user.email,
+        expire_days=remaining_days,
+        traffic_gb=plan.traffic_gb or 0,
+        db=db,
+    )
+    # Push the updated expiry for clients that already existed.
+    await update_expiry_on_all_servers(str(user.vpn_uuid), remaining_days, db)
 
     user.is_active = True
     db.add(user)
