@@ -198,4 +198,4 @@ class XUIClient:
             return False, f"Ошибка: {e}"
 
     def get_sub_link(self, vpn_uuid: str) -> str:
-        return f"{self.base_url}/sub/{vpn_uuid}"
+        return f"{self.base_url}/subkakovo/{vpn_uuid}"
