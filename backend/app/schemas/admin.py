@@ -93,6 +93,10 @@ class UserUpdate(BaseModel):
     is_active: bool | None = None
 
 
+class UserAssignPlan(BaseModel):
+    plan_id: int
+
+
 class SiteSettingsResponse(BaseModel):
     maintenance_mode: bool
 

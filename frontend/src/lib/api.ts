@@ -163,6 +163,11 @@ export const api = {
       }),
     deleteUser: (id: number) =>
       request<void>(`/admin/users/${id}`, { method: "DELETE" }),
+    assignPlan: (id: number, planId: number) =>
+      request<void>(`/admin/users/${id}/assign-plan`, {
+        method: "POST",
+        body: JSON.stringify({ plan_id: planId }),
+      }),
 
     getSettings: () =>
       request<{ maintenance_mode: boolean }>("/admin/settings"),

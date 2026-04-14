@@ -438,11 +438,35 @@ function PlansTab() {
 
 function UsersTab() {
   const [items, setItems] = useState<AdminUser[]>([]);
+  const [plans, setPlans] = useState<AdminPlan[]>([]);
+  const [assigning, setAssigning] = useState<AdminUser | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<number | "">("");
+  const [assignBusy, setAssignBusy] = useState(false);
 
   const load = () => api.admin.listUsers().then(setItems).catch(console.error);
   useEffect(() => {
     load();
+    api.admin.listPlans().then(setPlans).catch(console.error);
   }, []);
+
+  const openAssign = (u: AdminUser) => {
+    setAssigning(u);
+    setSelectedPlan("");
+  };
+
+  const confirmAssign = async () => {
+    if (!assigning || !selectedPlan) return;
+    setAssignBusy(true);
+    try {
+      await api.admin.assignPlan(assigning.id, Number(selectedPlan));
+      setAssigning(null);
+      load();
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setAssignBusy(false);
+    }
+  };
 
   const toggleActive = async (u: AdminUser) => {
     try {
@@ -464,6 +488,7 @@ function UsersTab() {
   };
 
   return (
+    <div>
     <div className="glass-card overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="text-left text-slate-500 border-b border-white/5">
@@ -499,7 +524,13 @@ function UsersTab() {
                   <span className="text-slate-500">user</span>
                 )}
               </td>
-              <td className="p-3 text-right">
+              <td className="p-3 text-right space-x-2">
+                <button
+                  onClick={() => openAssign(u)}
+                  className="text-neon-cyan hover:underline text-xs"
+                >
+                  выдать план
+                </button>
                 <button
                   onClick={() => remove(u.id)}
                   className="text-red-400 hover:underline text-xs"
@@ -511,6 +542,37 @@ function UsersTab() {
           ))}
         </tbody>
       </table>
+    </div>
+
+    {assigning && (
+      <Modal
+        title={`Выдать план — ${assigning.email}`}
+        onClose={() => setAssigning(null)}
+        onSave={confirmAssign}
+      >
+        <p className="text-xs text-slate-500">
+          План будет активирован вручную, без оплаты. Если у пользователя уже
+          есть активная подписка, её срок будет продлён.
+        </p>
+        <Select
+          label="План"
+          value={selectedPlan === "" ? "" : String(selectedPlan)}
+          onChange={(v) => setSelectedPlan(v === "" ? "" : Number(v))}
+          options={[
+            { value: "", label: "— выберите план —" },
+            ...plans
+              .filter((p) => p.is_active)
+              .map((p) => ({
+                value: String(p.id),
+                label: `${p.name} — ${p.duration_days} дн.`,
+              })),
+          ]}
+        />
+        {assignBusy && (
+          <div className="text-xs text-slate-500">Активация...</div>
+        )}
+      </Modal>
+    )}
     </div>
   );
 }

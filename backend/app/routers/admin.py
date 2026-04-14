@@ -24,8 +24,10 @@ from app.schemas.admin import (
     SiteSettingsResponse,
     SiteSettingsUpdate,
     UserAdminResponse,
+    UserAssignPlan,
     UserUpdate,
 )
+from app.services.subscription import activate_subscription
 from app.services.xui import XUIClient, XUIServer
 
 
@@ -159,6 +161,22 @@ async def update_user(
     await db.commit()
     await db.refresh(user)
     return user
+
+
+@router.post("/users/{user_id}/assign-plan", status_code=204)
+async def assign_plan_to_user(
+    user_id: int,
+    data: UserAssignPlan,
+    db: AsyncSession = Depends(get_db),
+):
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    plan = await db.get(Plan, data.plan_id)
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    await activate_subscription(user_id, data.plan_id, db)
+    await db.commit()
 
 
 @router.delete("/users/{user_id}", status_code=204)
