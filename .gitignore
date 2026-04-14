@@ -14,3 +14,4 @@ nginx/ssl/*.key
 .venv/
 celerybeat-schedule
 next-env.d.ts
+*.tsbuildinfo
