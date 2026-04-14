@@ -116,5 +116,49 @@ class XUIClient:
             )
             return resp.json()
 
+    async def test_connection(self) -> tuple[bool, str]:
+        """Проверка: логин + наличие inbound с заданным id."""
+        try:
+            async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+                login_resp = await client.post(
+                    f"{self.base_url}/login",
+                    json={
+                        "username": self.server.username,
+                        "password": self.server.password,
+                    },
+                )
+                if login_resp.status_code != 200:
+                    return False, f"Login HTTP {login_resp.status_code}"
+                try:
+                    login_data = login_resp.json()
+                except Exception:
+                    return False, "Login: неверный ответ (не JSON)"
+                if not login_data.get("success"):
+                    return False, f"Login: {login_data.get('msg') or 'неверные данные'}"
+                cookie = login_resp.cookies.get("3x-ui")
+                if not cookie:
+                    return False, "Login: сессионная cookie не получена"
+
+                list_resp = await client.post(
+                    f"{self.base_url}/panel/api/inbounds/list",
+                    headers={"Cookie": f"3x-ui={cookie}"},
+                )
+                if list_resp.status_code != 200:
+                    return False, f"Inbounds HTTP {list_resp.status_code}"
+                data = list_resp.json()
+                if not data.get("success"):
+                    return False, f"Inbounds: {data.get('msg') or 'ошибка'}"
+                inbounds = data.get("obj") or []
+                ids = [i.get("id") for i in inbounds]
+                if self.server.inbound_id not in ids:
+                    return False, f"Inbound #{self.server.inbound_id} не найден (есть: {ids or 'нет'})"
+                return True, f"OK — подключено, inbound #{self.server.inbound_id} найден"
+        except httpx.ConnectError as e:
+            return False, f"Не удалось подключиться: {e}"
+        except httpx.TimeoutException:
+            return False, "Таймаут подключения"
+        except Exception as e:
+            return False, f"Ошибка: {e}"
+
     def get_sub_link(self, vpn_uuid: str) -> str:
         return f"{self.base_url}/sub/{vpn_uuid}"

@@ -10,6 +10,7 @@ from app.auth import require_admin
 from app.database import get_db
 from app.models.plan import Plan
 from app.models.server import Server
+from app.models.site_settings import SiteSettings
 from app.models.user import User
 from app.schemas.admin import (
     PlanAdminResponse,
@@ -17,10 +18,25 @@ from app.schemas.admin import (
     PlanUpdate,
     ServerAdminResponse,
     ServerCreate,
+    ServerTestConnection,
+    ServerTestResult,
     ServerUpdate,
+    SiteSettingsResponse,
+    SiteSettingsUpdate,
     UserAdminResponse,
     UserUpdate,
 )
+from app.services.xui import XUIClient, XUIServer
+
+
+async def _get_or_create_settings(db: AsyncSession) -> SiteSettings:
+    obj = await db.get(SiteSettings, 1)
+    if not obj:
+        obj = SiteSettings(id=1, maintenance_mode=False)
+        db.add(obj)
+        await db.commit()
+        await db.refresh(obj)
+    return obj
 
 router = APIRouter(dependencies=[Depends(require_admin)])
 
@@ -31,6 +47,21 @@ router = APIRouter(dependencies=[Depends(require_admin)])
 async def list_servers(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Server).order_by(Server.id))
     return result.scalars().all()
+
+
+@router.post("/servers/test-connection", response_model=ServerTestResult)
+async def test_server_connection(data: ServerTestConnection):
+    client = XUIClient(
+        XUIServer(
+            name="test",
+            url=data.url.rstrip("/"),
+            username=data.username,
+            password=data.password,
+            inbound_id=data.inbound_id,
+        )
+    )
+    ok, message = await client.test_connection()
+    return ServerTestResult(ok=ok, message=message)
 
 
 @router.post("/servers", response_model=ServerAdminResponse, status_code=201)
@@ -143,3 +174,19 @@ async def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
     await db.delete(user)
     await db.commit()
+
+
+# ---------- Site settings ----------
+
+@router.get("/settings", response_model=SiteSettingsResponse)
+async def get_settings(db: AsyncSession = Depends(get_db)):
+    return await _get_or_create_settings(db)
+
+
+@router.patch("/settings", response_model=SiteSettingsResponse)
+async def update_settings(data: SiteSettingsUpdate, db: AsyncSession = Depends(get_db)):
+    obj = await _get_or_create_settings(db)
+    obj.maintenance_mode = data.maintenance_mode
+    await db.commit()
+    await db.refresh(obj)
+    return obj

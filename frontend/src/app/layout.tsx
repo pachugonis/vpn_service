@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import MaintenanceGate from "@/components/MaintenanceGate";
 
 export const metadata: Metadata = {
   title: "КАКОВО?! — Безопасный VPN без границ",
@@ -39,7 +40,9 @@ export default function RootLayout({
         <div className="radial-glow top-[60%] -right-[300px] opacity-30" />
         <div className="radial-glow top-[80%] -left-[300px] opacity-20" style={{ background: "radial-gradient(circle, rgba(45,212,168,0.06) 0%, transparent 70%)" }} />
 
-        <div className="relative z-10">{children}</div>
+        <div className="relative z-10">
+          <MaintenanceGate>{children}</MaintenanceGate>
+        </div>
       </body>
     </html>
   );

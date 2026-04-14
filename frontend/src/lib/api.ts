@@ -98,6 +98,9 @@ export const api = {
 
   getServers: () => request<ServerInfo[]>("/servers/"),
 
+  getPublicSettings: () =>
+    request<{ maintenance_mode: boolean }>("/settings"),
+
   createPlategaPayment: (planId: number, paymentMethod: number = 10) =>
     request<{ payment_id: string; redirect_url: string }>(
       "/payments/platega/create",
@@ -127,6 +130,16 @@ export const api = {
       }),
     deleteServer: (id: number) =>
       request<void>(`/admin/servers/${id}`, { method: "DELETE" }),
+    testServerConnection: (data: {
+      url: string;
+      username: string;
+      password: string;
+      inbound_id: number;
+    }) =>
+      request<{ ok: boolean; message: string }>(
+        "/admin/servers/test-connection",
+        { method: "POST", body: JSON.stringify(data) }
+      ),
 
     listPlans: () => request<AdminPlan[]>("/admin/plans"),
     createPlan: (data: Partial<AdminPlan>) =>
@@ -150,6 +163,14 @@ export const api = {
       }),
     deleteUser: (id: number) =>
       request<void>(`/admin/users/${id}`, { method: "DELETE" }),
+
+    getSettings: () =>
+      request<{ maintenance_mode: boolean }>("/admin/settings"),
+    updateSettings: (data: { maintenance_mode: boolean }) =>
+      request<{ maintenance_mode: boolean }>("/admin/settings", {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
   },
 };
 

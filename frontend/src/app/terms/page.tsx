@@ -93,8 +93,8 @@ export default function TermsPage() {
             <h2 className="text-lg font-semibold text-white mb-3">8. Контакты</h2>
             <p>
               По всем вопросам —{" "}
-              <a href="mailto:support@kakovo.vpn" className="text-neon-cyan hover:underline">
-                support@kakovo.vpn
+              <a href="mailto:support@kakovo.com" className="text-neon-cyan hover:underline">
+                support@kakovo.com
               </a>
               .
             </p>

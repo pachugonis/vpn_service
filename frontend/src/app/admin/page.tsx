@@ -10,7 +10,7 @@ import {
 } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 
-type Tab = "servers" | "plans" | "users";
+type Tab = "servers" | "plans" | "users" | "settings";
 
 const COUNTRIES: { code: string; name: string; flag: string }[] = [
   { code: "de", name: "Германия", flag: "🇩🇪" },
@@ -73,7 +73,7 @@ export default function AdminPage() {
         </h1>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          {(["servers", "plans", "users"] as Tab[]).map((t) => (
+          {(["servers", "plans", "users", "settings"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -83,7 +83,13 @@ export default function AdminPage() {
                   : "bg-void-700/50 text-slate-400 border border-white/5 hover:text-white"
               }`}
             >
-              {t === "servers" ? "Серверы" : t === "plans" ? "Планы" : "Пользователи"}
+              {t === "servers"
+                ? "Серверы"
+                : t === "plans"
+                ? "Планы"
+                : t === "users"
+                ? "Пользователи"
+                : "Настройки"}
             </button>
           ))}
         </div>
@@ -91,6 +97,7 @@ export default function AdminPage() {
         {tab === "servers" && <ServersTab />}
         {tab === "plans" && <PlansTab />}
         {tab === "users" && <UsersTab />}
+        {tab === "settings" && <SettingsTab />}
       </div>
     </main>
   );
@@ -235,7 +242,62 @@ function ServersTab() {
             value={!!editing.is_active}
             onChange={(v) => setEditing({ ...editing, is_active: v })}
           />
+          <TestConnectionRow server={editing} />
         </Modal>
+      )}
+    </div>
+  );
+}
+
+function TestConnectionRow({ server }: { server: Partial<AdminServer> }) {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(
+    null
+  );
+
+  const run = async () => {
+    if (!server.url || !server.username || !server.password) {
+      setResult({
+        ok: false,
+        message: "Заполните URL, username и password",
+      });
+      return;
+    }
+    setLoading(true);
+    setResult(null);
+    try {
+      const r = await api.admin.testServerConnection({
+        url: server.url,
+        username: server.username,
+        password: server.password,
+        inbound_id: Number(server.inbound_id ?? 1),
+      });
+      setResult(r);
+    } catch (e: any) {
+      setResult({ ok: false, message: e.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="pt-2 border-t border-white/5 mt-2">
+      <button
+        type="button"
+        onClick={run}
+        disabled={loading}
+        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/40 hover:bg-neon-cyan/25 disabled:opacity-50"
+      >
+        {loading ? "Проверка..." : "Проверить соединение"}
+      </button>
+      {result && (
+        <div
+          className={`mt-2 text-xs ${
+            result.ok ? "text-neon-green" : "text-red-400"
+          }`}
+        >
+          {result.message}
+        </div>
       )}
     </div>
   );
@@ -449,6 +511,80 @@ function UsersTab() {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+/* ---------------- Settings ---------------- */
+
+function SettingsTab() {
+  const [maintenance, setMaintenance] = useState<boolean | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    api.admin
+      .getSettings()
+      .then((s) => setMaintenance(s.maintenance_mode))
+      .catch(console.error);
+  }, []);
+
+  const toggle = async () => {
+    if (maintenance === null) return;
+    setSaving(true);
+    try {
+      const next = !maintenance;
+      const s = await api.admin.updateSettings({ maintenance_mode: next });
+      setMaintenance(s.maintenance_mode);
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (maintenance === null) {
+    return <div className="text-slate-500 text-sm">Загрузка...</div>;
+  }
+
+  return (
+    <div className="glass-card p-6 max-w-2xl">
+      <h2 className="font-display font-semibold text-white text-lg mb-1">
+        Режим обслуживания
+      </h2>
+      <p className="text-sm text-slate-500 mb-5">
+        Когда включён, сайт недоступен для всех пользователей кроме
+        администраторов. Администраторы могут войти через{" "}
+        <code className="text-neon-cyan">/admin-login</code>.
+      </p>
+
+      <div className="flex items-center justify-between p-4 rounded-lg bg-void-700/40 border border-white/5">
+        <div>
+          <div className="text-white text-sm font-medium">
+            Статус:{" "}
+            {maintenance ? (
+              <span className="text-amber-400">включён</span>
+            ) : (
+              <span className="text-neon-green">выключен</span>
+            )}
+          </div>
+          <div className="text-xs text-slate-500 mt-0.5">
+            {maintenance
+              ? "Сайт сейчас на обслуживании"
+              : "Сайт работает в штатном режиме"}
+          </div>
+        </div>
+        <button
+          onClick={toggle}
+          disabled={saving}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50 ${
+            maintenance
+              ? "bg-neon-green/15 text-neon-green border border-neon-green/40 hover:bg-neon-green/25"
+              : "bg-amber-500/15 text-amber-400 border border-amber-500/40 hover:bg-amber-500/25"
+          }`}
+        >
+          {saving ? "..." : maintenance ? "Выключить" : "Включить"}
+        </button>
+      </div>
     </div>
   );
 }

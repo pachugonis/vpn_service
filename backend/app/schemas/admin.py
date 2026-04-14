@@ -26,6 +26,18 @@ class ServerUpdate(BaseModel):
     is_active: bool | None = None
 
 
+class ServerTestConnection(BaseModel):
+    url: str
+    username: str
+    password: str
+    inbound_id: int
+
+
+class ServerTestResult(BaseModel):
+    ok: bool
+    message: str
+
+
 class ServerAdminResponse(BaseModel):
     id: int
     name: str
@@ -79,3 +91,13 @@ class UserAdminResponse(BaseModel):
 
 class UserUpdate(BaseModel):
     is_active: bool | None = None
+
+
+class SiteSettingsResponse(BaseModel):
+    maintenance_mode: bool
+
+    model_config = {"from_attributes": True}
+
+
+class SiteSettingsUpdate(BaseModel):
+    maintenance_mode: bool
