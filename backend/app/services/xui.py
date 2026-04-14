@@ -19,7 +19,7 @@ class XUIServer:
 class XUIClient:
     def __init__(self, server: XUIServer):
         self.server = server
-        self.base_url = server.url
+        self.base_url = server.url.rstrip("/")
         self._session_cookie: str | None = None
 
     async def _login(self) -> str:
@@ -144,7 +144,10 @@ class XUIClient:
                     headers={"Cookie": f"3x-ui={cookie}"},
                 )
                 if list_resp.status_code != 200:
-                    return False, f"Inbounds HTTP {list_resp.status_code}"
+                    return False, (
+                        f"Inbounds HTTP {list_resp.status_code} "
+                        f"({list_resp.request.url})"
+                    )
                 data = list_resp.json()
                 if not data.get("success"):
                     return False, f"Inbounds: {data.get('msg') or 'ошибка'}"
