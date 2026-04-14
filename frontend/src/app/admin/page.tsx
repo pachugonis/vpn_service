@@ -224,6 +224,11 @@ function ServersTab() {
           />
           <Input label="Флаг" value={editing.flag_emoji || ""} onChange={(v) => setEditing({ ...editing, flag_emoji: v })} />
           <Input label="URL" value={editing.url || ""} onChange={(v) => setEditing({ ...editing, url: v })} />
+          <Input
+            label="Sub URL (напр. https://host:2096)"
+            value={editing.sub_url || ""}
+            onChange={(v) => setEditing({ ...editing, sub_url: v })}
+          />
           <Input label="Username" value={editing.username || ""} onChange={(v) => setEditing({ ...editing, username: v })} />
           <Input
             label="Password"

@@ -9,6 +9,7 @@ class ServerCreate(BaseModel):
     location: str
     flag_emoji: str | None = None
     url: str
+    sub_url: str | None = None
     username: str
     password: str
     inbound_id: int
@@ -20,6 +21,7 @@ class ServerUpdate(BaseModel):
     location: str | None = None
     flag_emoji: str | None = None
     url: str | None = None
+    sub_url: str | None = None
     username: str | None = None
     password: str | None = None
     inbound_id: int | None = None
@@ -44,6 +46,7 @@ class ServerAdminResponse(BaseModel):
     location: str
     flag_emoji: str | None
     url: str
+    sub_url: str | None
     username: str
     inbound_id: int
     is_active: bool

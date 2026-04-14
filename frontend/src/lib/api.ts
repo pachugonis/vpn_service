@@ -186,6 +186,7 @@ export interface AdminServer {
   location: string;
   flag_emoji: string | null;
   url: string;
+  sub_url: string | null;
   username: string;
   password?: string;
   inbound_id: number;

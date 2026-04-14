@@ -12,6 +12,7 @@ class Server(Base):
     location: Mapped[str] = mapped_column(String(50), nullable=False)
     flag_emoji: Mapped[str | None] = mapped_column(String(10), nullable=True)
     url: Mapped[str] = mapped_column(String(255), nullable=False)
+    sub_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
     username: Mapped[str] = mapped_column(String(100), nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     inbound_id: Mapped[int] = mapped_column(Integer, nullable=False)

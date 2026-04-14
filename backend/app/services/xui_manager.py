@@ -62,7 +62,8 @@ async def sync_client_to_all_servers(
             error = str(e)
             logger.error("Failed to sync client on %s: %s", server.name, e)
 
-        sub_link = client.get_sub_link(vpn_uuid)
+        sub_base = (server.sub_url or server.url).rstrip("/")
+        sub_link = f"{sub_base}/subkakovo/{vpn_uuid}"
         try:
             await db.execute(
                 insert(UserServerConfig)
