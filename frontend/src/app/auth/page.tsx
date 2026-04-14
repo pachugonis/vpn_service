@@ -54,7 +54,7 @@ function AuthForm() {
         </Link>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 pb-20">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

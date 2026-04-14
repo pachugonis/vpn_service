@@ -138,9 +138,9 @@ export default function Home() {
       <Navbar />
 
       {/* ─── HERO ─── */}
-      <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-6 overflow-hidden">
+      <section className="relative pt-28 pb-16 md:pt-44 md:pb-32 px-4 sm:px-6 overflow-hidden">
         {/* Decorative orb */}
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-b from-neon-cyan/[0.06] to-transparent blur-3xl pointer-events-none" />
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[90vw] max-w-[600px] h-[90vw] max-h-[600px] rounded-full bg-gradient-to-b from-neon-cyan/[0.06] to-transparent blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto text-center relative">
           {/* Badge */}
@@ -160,10 +160,9 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="font-display font-extrabold text-4xl sm:text-5xl md:text-7xl leading-[1.1] tracking-tight mb-6"
+            className="font-display font-extrabold text-[2.75rem] sm:text-[3.3rem] md:text-[4.95rem] leading-[1.1] tracking-tight mb-6"
           >
-            Интернет без{" "}
-            <span className="text-gradient-cyan">границ</span>
+            <span className="text-gradient-cyan">КАКОВО</span><span className="text-white">?!</span>
           </motion.h1>
 
           <motion.p
@@ -196,7 +195,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.6 }}
-            className="mt-16 flex flex-wrap justify-center gap-8 md:gap-16"
+            className="mt-14 flex flex-wrap justify-center gap-10 md:gap-16"
           >
             {[
               { value: "3", label: "локации" },
@@ -217,7 +216,7 @@ export default function Home() {
       </section>
 
       {/* ─── FEATURES ─── */}
-      <section id="features" className="py-20 md:py-28 px-6">
+      <section id="features" className="py-20 md:py-28 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
@@ -268,7 +267,7 @@ export default function Home() {
       </section>
 
       {/* ─── SERVERS ─── */}
-      <section id="servers" className="py-20 md:py-28 px-6">
+      <section id="servers" className="py-20 md:py-28 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial="hidden"
@@ -303,7 +302,7 @@ export default function Home() {
                 key={s.country}
                 variants={fadeUp}
                 custom={i}
-                className="glass-card px-6 py-5 flex items-center justify-between gap-4"
+                className="glass-card px-4 sm:px-6 py-5 flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-4">
                   <span className="text-3xl">{s.flag}</span>
@@ -315,7 +314,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4 sm:gap-6">
                   {/* Ping */}
                   <div className="hidden sm:block text-right">
                     <div className="text-xs text-slate-500">Пинг</div>
@@ -351,7 +350,7 @@ export default function Home() {
       </section>
 
       {/* ─── PRICING ─── */}
-      <section id="pricing" className="py-20 md:py-28 px-6">
+      <section id="pricing" className="py-20 md:py-28 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial="hidden"
@@ -477,13 +476,13 @@ export default function Home() {
       </section>
 
       {/* ─── CTA ─── */}
-      <section className="py-20 md:py-28 px-6">
+      <section className="py-20 md:py-28 px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="max-w-3xl mx-auto glass-card p-10 md:p-14 text-center relative overflow-hidden"
+          className="max-w-3xl mx-auto glass-card p-8 sm:p-10 md:p-14 text-center relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-neon-cyan/[0.03] to-neon-blue/[0.03]" />
           <div className="relative">

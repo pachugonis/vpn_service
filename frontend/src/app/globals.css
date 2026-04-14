@@ -20,12 +20,25 @@
     scrollbar-color: rgba(52, 211, 153, 0.2) transparent;
   }
 
+  html,
+  body {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     color: #e2e8f0;
     background: var(--void-950);
     font-family: "Manrope", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  @media (max-width: 640px) {
+    .radial-glow {
+      width: 100vw !important;
+      height: 100vw !important;
+    }
   }
 
   ::selection {

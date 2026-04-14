@@ -47,7 +47,7 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-grid">
       <Navbar />
 
-      <div className="pt-24 pb-16 px-6 max-w-4xl mx-auto">
+      <div className="pt-24 pb-16 px-4 sm:px-6 max-w-4xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -127,7 +127,7 @@ export default function DashboardPage() {
           ) : (
             <div className="text-center py-6">
               <p className="text-slate-400 mb-4">Нет активной подписки</p>
-              <Link href="/pricing" className="btn-solid !py-2.5 !px-6">
+              <Link href="/pricing" className="btn-solid !py-2.5 !px-4 sm:px-6">
                 Выбрать тариф
               </Link>
             </div>
@@ -157,7 +157,7 @@ export default function DashboardPage() {
               {configs.map((c) => (
                 <div
                   key={c.server_name}
-                  className="glass-card px-6 py-4 flex items-center justify-between gap-4"
+                  className="glass-card px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{c.flag_emoji}</span>

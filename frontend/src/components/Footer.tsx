@@ -1,29 +1,17 @@
 import Link from "next/link";
+import Logo from "./Logo";
 
 export default function Footer() {
   return (
     <footer className="border-t border-white/5 mt-auto">
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid md:grid-cols-4 gap-8 mb-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
           {/* Brand */}
-          <div className="md:col-span-1">
+          <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-neon-cyan to-neon-blue flex items-center justify-center">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#040810"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-              </div>
-              <span className="font-display font-bold text-white">
-                Void<span className="text-neon-cyan">VPN</span>
+              <Logo size={28} />
+              <span className="font-display font-bold">
+                <span className="text-gradient-cyan">КАКОВО</span><span className="text-white">?!</span>
               </span>
             </Link>
             <p className="text-sm text-slate-500 leading-relaxed">
@@ -55,13 +43,17 @@ export default function Footer() {
               Помощь
             </h4>
             <ul className="space-y-2.5">
-              {["Настройка", "FAQ", "Поддержка"].map((item) => (
-                <li key={item}>
+              {[
+                { label: "Настройка", href: "#" },
+                { label: "FAQ", href: "#" },
+                { label: "Поддержка", href: "/support" },
+              ].map((item) => (
+                <li key={item.label}>
                   <Link
-                    href="#"
+                    href={item.href}
                     className="text-sm text-slate-500 hover:text-neon-cyan transition-colors"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -87,17 +79,17 @@ export default function Footer() {
 
         <div className="border-t border-white/5 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-slate-600">
-            &copy; {new Date().getFullYear()} VoidVPN. Все права защищены.
+            &copy; {new Date().getFullYear()} КАКОВО?! Все права защищены.
           </p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link
-              href="#"
+              href="/privacy"
               className="text-xs text-slate-600 hover:text-slate-400 transition-colors"
             >
               Политика конфиденциальности
             </Link>
             <Link
-              href="#"
+              href="/terms"
               className="text-xs text-slate-600 hover:text-slate-400 transition-colors"
             >
               Условия использования

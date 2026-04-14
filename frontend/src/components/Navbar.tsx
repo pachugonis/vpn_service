@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api";
+import Logo from "./Logo";
 
 interface Me {
   id: number;
@@ -67,25 +68,12 @@ export default function Navbar() {
           : "bg-transparent"
       }`}
     >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-cyan to-neon-blue flex items-center justify-center">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#040810"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </div>
-          <span className="font-display font-bold text-lg tracking-tight text-white">
-            Void<span className="text-neon-cyan">VPN</span>
+          <Logo size={34} className="drop-shadow-[0_0_10px_rgba(34,211,238,0.35)] transition-transform group-hover:scale-105" />
+          <span className="font-display font-bold text-lg tracking-tight">
+            <span className="text-gradient-cyan">КАКОВО</span><span className="text-white">?!</span>
           </span>
         </Link>
 
@@ -184,7 +172,7 @@ export default function Navbar() {
             transition={{ duration: 0.3 }}
             className="md:hidden overflow-hidden bg-void-950/95 backdrop-blur-xl border-b border-white/5"
           >
-            <div className="px-6 py-6 space-y-4">
+            <div className="px-4 sm:px-6 py-6 space-y-4">
               {[
                 { href: "/#features", label: "Возможности" },
                 { href: "/#servers", label: "Серверы" },

@@ -174,6 +174,10 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=noreply@${DOMAIN}
 SMTP_PASSWORD=change-me
+
+# Telegram — бот для приёма обращений со страницы /support
+TELEGRAM_BOT_TOKEN=change-me
+TELEGRAM_SUPPORT_CHAT_ID=change-me
 EOF
 chmod 600 "$ENV_FILE"
 ok ".env создан (права 600)"
@@ -312,7 +316,7 @@ ${GRN}════════════════════════�
   Compose:   docker compose -f docker-compose.prod.yml <cmd>
 
 ${YLW}Что сделать дальше:${RST}
-  1. Заполнить в .env реальные ключи: PLATEGA_*, BTCPAY_*, SMTP_*
+  1. Заполнить в .env реальные ключи: PLATEGA_*, BTCPAY_*, SMTP_*, TELEGRAM_*
   2. Перезапустить: docker compose -f docker-compose.prod.yml up -d
   3. Зарегистрироваться под email ${ADMIN_EMAIL} — это будет админ
   4. В /admin добавить серверы 3x-ui и тарифные планы

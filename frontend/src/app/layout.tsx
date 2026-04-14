@@ -1,10 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VoidVPN — Безопасный VPN без границ",
+  title: "КАКОВО?! — Безопасный VPN без границ",
   description:
     "Быстрый и приватный VPN-сервис с серверами в Европе. VLESS + XTLS-Reality. Оплата картами РФ и биткоином.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#031a12",
 };
 
 export default function RootLayout({
@@ -26,7 +33,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="noise-overlay bg-void-950 min-h-screen">
+      <body className="noise-overlay bg-void-950 min-h-screen overflow-x-hidden">
         {/* Ambient glow blobs */}
         <div className="radial-glow -top-[400px] left-1/2 -translate-x-1/2 opacity-60" />
         <div className="radial-glow top-[60%] -right-[300px] opacity-30" />

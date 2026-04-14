@@ -67,7 +67,7 @@ export default function PricingPage() {
     <main className="min-h-screen flex flex-col bg-grid">
       <Navbar />
 
-      <section className="pt-32 pb-20 md:pt-40 md:pb-28 px-6">
+      <section className="pt-32 pb-20 md:pt-40 md:pb-28 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial="hidden"

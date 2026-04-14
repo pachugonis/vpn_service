@@ -12,6 +12,32 @@ import Navbar from "@/components/Navbar";
 
 type Tab = "servers" | "plans" | "users";
 
+const COUNTRIES: { code: string; name: string; flag: string }[] = [
+  { code: "de", name: "Германия", flag: "🇩🇪" },
+  { code: "nl", name: "Нидерланды", flag: "🇳🇱" },
+  { code: "fi", name: "Финляндия", flag: "🇫🇮" },
+  { code: "fr", name: "Франция", flag: "🇫🇷" },
+  { code: "gb", name: "Великобритания", flag: "🇬🇧" },
+  { code: "us", name: "США", flag: "🇺🇸" },
+  { code: "ca", name: "Канада", flag: "🇨🇦" },
+  { code: "se", name: "Швеция", flag: "🇸🇪" },
+  { code: "no", name: "Норвегия", flag: "🇳🇴" },
+  { code: "ch", name: "Швейцария", flag: "🇨🇭" },
+  { code: "at", name: "Австрия", flag: "🇦🇹" },
+  { code: "pl", name: "Польша", flag: "🇵🇱" },
+  { code: "lv", name: "Латвия", flag: "🇱🇻" },
+  { code: "lt", name: "Литва", flag: "🇱🇹" },
+  { code: "ee", name: "Эстония", flag: "🇪🇪" },
+  { code: "es", name: "Испания", flag: "🇪🇸" },
+  { code: "it", name: "Италия", flag: "🇮🇹" },
+  { code: "tr", name: "Турция", flag: "🇹🇷" },
+  { code: "jp", name: "Япония", flag: "🇯🇵" },
+  { code: "sg", name: "Сингапур", flag: "🇸🇬" },
+  { code: "hk", name: "Гонконг", flag: "🇭🇰" },
+  { code: "kz", name: "Казахстан", flag: "🇰🇿" },
+  { code: "ae", name: "ОАЭ", flag: "🇦🇪" },
+];
+
 export default function AdminPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("servers");
@@ -41,12 +67,12 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-grid">
       <Navbar />
-      <div className="pt-24 pb-16 px-6 max-w-6xl mx-auto">
+      <div className="pt-24 pb-16 px-4 sm:px-6 max-w-6xl mx-auto">
         <h1 className="font-display font-bold text-2xl md:text-3xl text-white mb-6">
           Админка
         </h1>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           {(["servers", "plans", "users"] as Tab[]).map((t) => (
             <button
               key={t}
@@ -177,7 +203,18 @@ function ServersTab() {
       {editing && (
         <Modal onClose={() => setEditing(null)} onSave={save} title={editing.id ? "Редактировать сервер" : "Новый сервер"}>
           <Input label="Название" value={editing.name || ""} onChange={(v) => setEditing({ ...editing, name: v })} />
-          <Input label="Локация" value={editing.location || ""} onChange={(v) => setEditing({ ...editing, location: v })} />
+          <Select
+            label="Локация"
+            value={editing.location || ""}
+            onChange={(v) => {
+              const c = COUNTRIES.find((x) => x.code === v);
+              setEditing({ ...editing, location: v, flag_emoji: c?.flag || editing.flag_emoji || "" });
+            }}
+            options={[
+              { value: "", label: "— выберите страну —" },
+              ...COUNTRIES.map((c) => ({ value: c.code, label: `${c.flag} ${c.name}` })),
+            ]}
+          />
           <Input label="Флаг" value={editing.flag_emoji || ""} onChange={(v) => setEditing({ ...editing, flag_emoji: v })} />
           <Input label="URL" value={editing.url || ""} onChange={(v) => setEditing({ ...editing, url: v })} />
           <Input label="Username" value={editing.username || ""} onChange={(v) => setEditing({ ...editing, username: v })} />
@@ -470,6 +507,35 @@ function Input({
         onChange={(e) => onChange(e.target.value)}
         className="w-full px-3 py-2 rounded-lg bg-void-700/50 border border-white/10 text-white text-sm focus:outline-none focus:border-neon-cyan/50"
       />
+    </label>
+  );
+}
+
+function Select({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs text-slate-500 block mb-1">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-3 py-2 rounded-lg bg-void-700/50 border border-white/10 text-white text-sm focus:outline-none focus:border-neon-cyan/50"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value} className="bg-void-900">
+            {o.label}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }
