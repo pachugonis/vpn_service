@@ -1,10 +1,19 @@
 import json
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
 logger = logging.getLogger(__name__)
+
+
+def _expiry_ms(expire_days: int) -> int:
+    """3x-ui expects absolute Unix timestamp in ms, or 0 for unlimited."""
+    if not expire_days:
+        return 0
+    ts = datetime.now(timezone.utc) + timedelta(days=expire_days)
+    return int(ts.timestamp() * 1000)
 
 
 @dataclass
@@ -51,7 +60,7 @@ class XUIClient:
     ) -> dict:
         await self._ensure_auth()
 
-        expire_ms = expire_days * 24 * 60 * 60 * 1000 if expire_days else 0
+        expire_ms = _expiry_ms(expire_days)
         traffic_bytes = traffic_gb * 1024**3 if traffic_gb else 0
 
         payload = {
@@ -94,7 +103,7 @@ class XUIClient:
 
     async def update_client_expiry(self, vpn_uuid: str, expire_days: int) -> dict:
         await self._ensure_auth()
-        expire_ms = expire_days * 24 * 60 * 60 * 1000
+        expire_ms = _expiry_ms(expire_days)
         async with httpx.AsyncClient(verify=False) as client:
             resp = await client.post(
                 f"{self.base_url}/panel/api/inbounds/updateClient/{vpn_uuid}",
