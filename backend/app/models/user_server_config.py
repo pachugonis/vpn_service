@@ -20,4 +20,4 @@ class UserServerConfig(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="server_configs")
-    server = relationship("Server", back_populates="user_configs")
+    server = relationship("Server", back_populates="user_configs", lazy="selectin")

@@ -48,6 +48,7 @@ async def get_my_configs(
             server_location=c.server.location,
             flag_emoji=c.server.flag_emoji,
             sub_link=c.sub_link,
+            vpn_uuid=str(c.vpn_uuid),
         )
         for c in configs
     ]

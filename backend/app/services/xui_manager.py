@@ -40,9 +40,17 @@ async def add_client_to_all_servers(
 
     async def add_to_server(server: Server) -> dict:
         client = _make_client(server)
+        status = "ok"
+        error: str | None = None
         try:
             await client.add_client(vpn_uuid, email, expire_days, traffic_gb)
-            sub_link = client.get_sub_link(vpn_uuid)
+        except Exception as e:
+            status = "error"
+            error = str(e)
+            logger.error("Failed to add client to %s: %s", server.name, e)
+
+        sub_link = client.get_sub_link(vpn_uuid)
+        try:
             await db.execute(
                 insert(UserServerConfig)
                 .values(
@@ -53,10 +61,10 @@ async def add_client_to_all_servers(
                 )
                 .on_conflict_do_nothing()
             )
-            return {"server": server.name, "status": "ok"}
         except Exception as e:
-            logger.error("Failed to add client to %s: %s", server.name, e)
-            return {"server": server.name, "status": "error", "error": str(e)}
+            logger.error("Failed to persist UserServerConfig for %s: %s", server.name, e)
+
+        return {"server": server.name, "status": status, "error": error}
 
     results = await asyncio.gather(*[add_to_server(s) for s in servers])
     await db.commit()

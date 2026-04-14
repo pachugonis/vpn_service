@@ -49,6 +49,7 @@ export interface ServerConfig {
   server_location: string;
   flag_emoji: string | null;
   sub_link: string | null;
+  vpn_uuid: string;
 }
 
 export interface ServerInfo {

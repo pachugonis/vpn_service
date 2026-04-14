@@ -29,5 +29,6 @@ class ServerConfigResponse(BaseModel):
     server_location: str
     flag_emoji: str | None
     sub_link: str | None
+    vpn_uuid: str
 
     model_config = {"from_attributes": True}
