@@ -112,6 +112,9 @@ async def delete_server(server_id: int, db: AsyncSession = Depends(get_db)):
     server = await db.get(Server, server_id)
     if not server:
         raise HTTPException(status_code=404, detail="Server not found")
+    await db.execute(
+        delete(UserServerConfig).where(UserServerConfig.server_id == server_id)
+    )
     await db.delete(server)
     await db.commit()
 

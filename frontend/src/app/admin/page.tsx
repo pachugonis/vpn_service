@@ -131,8 +131,12 @@ function ServersTab() {
 
   const remove = async (id: number) => {
     if (!confirm("Удалить сервер?")) return;
-    await api.admin.deleteServer(id);
-    load();
+    try {
+      await api.admin.deleteServer(id);
+      load();
+    } catch (e: any) {
+      alert(e.message);
+    }
   };
 
   return (
