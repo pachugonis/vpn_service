@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { api, Plan } from "@/lib/api";
+import { api, Plan, ServerInfo } from "@/lib/api";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -83,30 +83,6 @@ const features = [
   },
 ];
 
-const servers = [
-  {
-    flag: "\u{1F1E9}\u{1F1EA}",
-    country: "Германия",
-    city: "Франкфурт",
-    load: 23,
-    ping: "18 мс",
-  },
-  {
-    flag: "\u{1F1F3}\u{1F1F1}",
-    country: "Нидерланды",
-    city: "Амстердам",
-    load: 31,
-    ping: "24 мс",
-  },
-  {
-    flag: "\u{1F1EB}\u{1F1EE}",
-    country: "Финляндия",
-    city: "Хельсинки",
-    load: 14,
-    ping: "32 мс",
-  },
-];
-
 const fallbackPlans: Plan[] = [
   { id: 1, name: "1 месяц", duration_days: 30, price_rub: 299, traffic_gb: null },
   { id: 2, name: "3 месяца", duration_days: 90, price_rub: 749, traffic_gb: null },
@@ -120,6 +96,7 @@ function monthlyPrice(plan: Plan): number {
 
 export default function Home() {
   const [plans, setPlans] = useState<Plan[]>(fallbackPlans);
+  const [servers, setServers] = useState<ServerInfo[]>([]);
   const [isAuthed, setIsAuthed] = useState(false);
   const router = useRouter();
 
@@ -127,6 +104,10 @@ export default function Home() {
     api
       .getPlans()
       .then((p) => p.length > 0 && setPlans(p))
+      .catch(() => {});
+    api
+      .getPublicServers()
+      .then((s) => setServers(s))
       .catch(() => {});
   }, []);
 
@@ -223,7 +204,7 @@ export default function Home() {
             className="mt-14 flex flex-wrap justify-center gap-10 md:gap-16"
           >
             {[
-              { value: "3", label: "локации" },
+              { value: servers.length > 0 ? String(servers.length) : "—", label: "локации" },
               { value: "99.9%", label: "uptime" },
               { value: "0", label: "логов" },
             ].map((stat) => (
@@ -322,42 +303,41 @@ export default function Home() {
             viewport={{ once: true, margin: "-50px" }}
             className="space-y-3"
           >
+            {servers.length === 0 && (
+              <div className="text-center text-sm text-slate-500 py-8">
+                Серверы скоро появятся
+              </div>
+            )}
             {servers.map((s, i) => (
               <motion.div
-                key={s.country}
+                key={s.id}
                 variants={fadeUp}
                 custom={i}
                 className="glass-card px-4 sm:px-6 py-5 flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-4">
-                  <span className="text-3xl">{s.flag}</span>
+                  <span className="text-3xl">{s.flag_emoji || "\u{1F310}"}</span>
                   <div>
                     <div className="font-display font-semibold text-white text-sm">
-                      {s.country}
+                      {s.name}
                     </div>
-                    <div className="text-xs text-slate-500">{s.city}</div>
+                    <div className="text-xs text-slate-500 uppercase">
+                      {s.location}
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 sm:gap-6">
-                  {/* Ping */}
-                  <div className="hidden sm:block text-right">
-                    <div className="text-xs text-slate-500">Пинг</div>
-                    <div className="text-sm font-mono text-neon-green font-medium">
-                      {s.ping}
-                    </div>
-                  </div>
-
                   {/* Load bar */}
                   <div className="hidden sm:block min-w-[120px]">
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-slate-500">Нагрузка</span>
-                      <span className="text-slate-400 font-mono">{s.load}%</span>
+                      <span className="text-slate-400 font-mono">{s.load_pct}%</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-void-600 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-neon-green to-neon-cyan transition-all"
-                        style={{ width: `${s.load}%` }}
+                        style={{ width: `${s.load_pct}%` }}
                       />
                     </div>
                   </div>

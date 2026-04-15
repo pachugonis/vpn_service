@@ -12,6 +12,22 @@ from app.schemas.subscription import ServerConfigResponse
 router = APIRouter()
 
 
+@router.get("/public")
+async def list_servers_public(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Server).where(Server.is_active == True))
+    servers = result.scalars().all()
+    return [
+        {
+            "id": s.id,
+            "name": s.name,
+            "location": s.location,
+            "flag_emoji": s.flag_emoji,
+            "load_pct": s.load_pct,
+        }
+        for s in servers
+    ]
+
+
 @router.get("/")
 async def list_servers(
     user: User = Depends(get_current_user),

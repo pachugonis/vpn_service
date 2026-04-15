@@ -101,6 +101,8 @@ export const api = {
 
   getServers: () => request<ServerInfo[]>("/servers/"),
 
+  getPublicServers: () => request<ServerInfo[]>("/servers/public"),
+
   getPublicSettings: () =>
     request<{ maintenance_mode: boolean }>("/settings"),
 
