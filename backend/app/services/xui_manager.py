@@ -104,6 +104,77 @@ async def remove_client_from_all_servers(vpn_uuid: str, db: AsyncSession) -> lis
     return list(await asyncio.gather(*[remove_from_server(s) for s in servers]))
 
 
+async def sync_all_users_to_server(server: Server, db: AsyncSession) -> list[dict]:
+    """Provision every user with an active subscription onto a single server.
+    Used when a new server is added so existing subscribers get a config
+    without manual intervention."""
+    from datetime import datetime
+
+    from app.models.subscription import Subscription
+    from app.models.user import User
+
+    result = await db.execute(
+        select(User, Subscription)
+        .join(Subscription, Subscription.user_id == User.id)
+        .where(
+            Subscription.is_active == True,
+            Subscription.ends_at > datetime.utcnow(),
+            User.vpn_uuid.is_not(None),
+        )
+    )
+    rows = result.all()
+
+    client = _make_client(server)
+
+    async def sync_user(user: User, sub: Subscription) -> dict:
+        expire_days = max(1, (sub.ends_at - datetime.utcnow()).days)
+        vpn_uuid = str(user.vpn_uuid)
+        status = "ok"
+        error: str | None = None
+        try:
+            try:
+                await client.add_client(vpn_uuid, user.email, expire_days, sub.traffic_gb or 0)
+            except Exception as add_err:
+                logger.info(
+                    "addClient on %s failed (%s), trying updateClient",
+                    server.name,
+                    add_err,
+                )
+                await client.update_client(
+                    vpn_uuid, user.email, expire_days, sub.traffic_gb or 0
+                )
+        except Exception as e:
+            status = "error"
+            error = str(e)
+            logger.error("Failed to sync user %s on %s: %s", user.id, server.name, e)
+
+        sub_base = (server.sub_url or server.url).rstrip("/")
+        sub_link = f"{sub_base}/subkakovo/{vpn_uuid}"
+        try:
+            await db.execute(
+                insert(UserServerConfig)
+                .values(
+                    user_id=user.id,
+                    server_id=server.id,
+                    vpn_uuid=vpn_uuid,
+                    sub_link=sub_link,
+                )
+                .on_conflict_do_nothing()
+            )
+        except Exception as e:
+            logger.error(
+                "Failed to persist UserServerConfig for user %s on %s: %s",
+                user.id,
+                server.name,
+                e,
+            )
+        return {"user_id": user.id, "status": status, "error": error}
+
+    results = await asyncio.gather(*[sync_user(u, s) for u, s in rows])
+    await db.commit()
+    return list(results)
+
+
 async def update_expiry_on_all_servers(
     vpn_uuid: str,
     email: str,

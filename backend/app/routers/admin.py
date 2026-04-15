@@ -32,7 +32,7 @@ from app.schemas.admin import (
     UserUpdate,
 )
 from app.services.subscription import activate_subscription
-from app.services.xui_manager import remove_client_from_all_servers
+from app.services.xui_manager import remove_client_from_all_servers, sync_all_users_to_server
 from app.services.xui import XUIClient, XUIServer
 
 
@@ -77,6 +77,13 @@ async def create_server(data: ServerCreate, db: AsyncSession = Depends(get_db)):
     db.add(server)
     await db.commit()
     await db.refresh(server)
+
+    if server.is_active:
+        try:
+            await sync_all_users_to_server(server, db)
+        except Exception:
+            pass
+
     return server
 
 
@@ -85,10 +92,18 @@ async def update_server(server_id: int, data: ServerUpdate, db: AsyncSession = D
     server = await db.get(Server, server_id)
     if not server:
         raise HTTPException(status_code=404, detail="Server not found")
+    was_active = server.is_active
     for k, v in data.model_dump(exclude_unset=True).items():
         setattr(server, k, v)
     await db.commit()
     await db.refresh(server)
+
+    if server.is_active and not was_active:
+        try:
+            await sync_all_users_to_server(server, db)
+        except Exception:
+            pass
+
     return server
 
 
