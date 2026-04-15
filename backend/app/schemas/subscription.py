@@ -24,6 +24,10 @@ class SubscriptionResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class AggregatedSubResponse(BaseModel):
+    sub_url: str
+
+
 class ServerConfigResponse(BaseModel):
     server_name: str
     server_location: str

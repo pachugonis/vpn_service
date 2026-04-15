@@ -9,14 +9,20 @@ import Navbar from "@/components/Navbar";
 export default function DashboardPage() {
   const [sub, setSub] = useState<Subscription | null>(null);
   const [configs, setConfigs] = useState<ServerConfig[]>([]);
+  const [subUrl, setSubUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([api.getSubscription(), api.getConfigs()])
-      .then(([s, c]) => {
+    Promise.all([
+      api.getSubscription(),
+      api.getConfigs(),
+      api.getSubUrl().catch(() => null),
+    ])
+      .then(([s, c, u]) => {
         setSub(s);
         setConfigs(c);
+        setSubUrl(u?.sub_url ?? null);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -133,6 +139,62 @@ export default function DashboardPage() {
             </div>
           )}
         </motion.div>
+
+        {/* Unified subscription link */}
+        {subUrl && sub?.is_active && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="glass-card p-6 mb-6"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-neon-cyan">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.71" />
+              </svg>
+              <h2 className="font-display font-semibold text-white text-lg">
+                Единая ссылка подписки
+              </h2>
+            </div>
+            <p className="text-sm text-slate-400 mb-4">
+              Вставьте эту ссылку в ваш VPN-клиент (Happ, v2rayNG, Streisand и др.) —
+              все серверы подгрузятся автоматически и будут обновляться.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <code className="flex-1 min-w-0 truncate text-xs text-slate-300 bg-void-700/50 border border-white/5 px-3 py-2 rounded-lg">
+                {subUrl}
+              </code>
+              <button
+                onClick={() => copyLink(subUrl, "__all__")}
+                className="btn-neon !py-2 !px-4 text-xs gap-2"
+              >
+                {copied === "__all__" ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Скопировано
+                  </>
+                ) : (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    Копировать
+                  </>
+                )}
+              </button>
+              <a
+                href={`happ://add/${encodeURIComponent(subUrl)}`}
+                className="btn-solid !py-2 !px-4 text-xs"
+              >
+                Открыть в Happ
+              </a>
+            </div>
+          </motion.div>
+        )}
 
         {/* Server configs */}
         {configs.length > 0 && (

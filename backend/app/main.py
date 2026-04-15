@@ -2,7 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import admin, auth, payments, settings as settings_router, subscriptions, webhooks, servers
+from app.routers import (
+    admin,
+    aggregated_sub,
+    auth,
+    payments,
+    servers,
+    settings as settings_router,
+    subscriptions,
+    webhooks,
+)
 
 app = FastAPI(title="VPN Shop API", version="1.0.0")
 
@@ -21,6 +30,7 @@ app.include_router(webhooks.router, tags=["webhooks"])
 app.include_router(servers.router, prefix="/servers", tags=["servers"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(settings_router.router, tags=["settings"])
+app.include_router(aggregated_sub.router, tags=["sub"])
 
 
 @app.get("/health")

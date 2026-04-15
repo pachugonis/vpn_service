@@ -97,6 +97,8 @@ export const api = {
 
   getConfigs: () => request<ServerConfig[]>("/subscriptions/configs"),
 
+  getSubUrl: () => request<{ sub_url: string }>("/subscriptions/sub-url"),
+
   getServers: () => request<ServerInfo[]>("/servers/"),
 
   getPublicSettings: () =>

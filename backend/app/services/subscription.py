@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import uuid
 from datetime import datetime, timedelta
@@ -8,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.plan import Plan
 from app.models.subscription import Subscription
 from app.models.user import User
+from app.services.email import send_sub_link_email
 from app.services.xui_manager import (
     remove_client_from_all_servers,
     sync_client_to_all_servers,
@@ -70,6 +72,11 @@ async def activate_subscription(user_id: int, plan_id: int, db: AsyncSession):
         db=db,
     )
     logger.info("Subscription activated for user %s, plan %s", user_id, plan_id)
+
+    try:
+        await asyncio.to_thread(send_sub_link_email, user.email, str(user.vpn_uuid))
+    except Exception as e:
+        logger.error("send_sub_link_email failed for %s: %s", user.email, e)
 
 
 async def revoke_subscription(user_id: int, db: AsyncSession):
