@@ -71,5 +71,5 @@ async def aggregated_sub(vpn_uuid: str, db: AsyncSession = Depends(get_db)):
     return Response(
         content=body,
         media_type="text/plain; charset=utf-8",
-        headers={"Profile-Title": "VPN Shop"},
+        headers={"Profile-Title": "VPN Kakovo"},
     )
