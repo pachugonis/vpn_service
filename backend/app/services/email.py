@@ -13,8 +13,7 @@ def _api_host() -> str:
     host = parsed.hostname or "localhost"
     if host.startswith("www."):
         host = host[4:]
-    scheme = parsed.scheme or "https"
-    return f"{scheme}://api.{host}"
+    return f"https://api.{host}"
 
 
 def build_sub_url(vpn_uuid: str) -> str:

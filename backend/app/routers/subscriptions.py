@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +14,7 @@ from app.schemas.subscription import (
     ServerConfigResponse,
     SubscriptionResponse,
 )
+from app.services.email import build_sub_url
 
 router = APIRouter()
 
@@ -61,10 +62,8 @@ async def get_my_configs(
 
 @router.get("/sub-url", response_model=AggregatedSubResponse)
 async def get_my_sub_url(
-    request: Request,
     user: User = Depends(get_current_user),
 ):
     if not user.vpn_uuid:
         raise HTTPException(status_code=404, detail="VPN UUID не назначен")
-    base = str(request.base_url).rstrip("/")
-    return AggregatedSubResponse(sub_url=f"{base}/subkakovo/{user.vpn_uuid}")
+    return AggregatedSubResponse(sub_url=build_sub_url(str(user.vpn_uuid)))
