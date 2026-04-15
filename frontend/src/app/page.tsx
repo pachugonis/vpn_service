@@ -293,7 +293,7 @@ export default function Home() {
               custom={1}
               className="font-display font-bold text-3xl md:text-4xl text-white"
             >
-              Локации в Европе
+              Локации
             </motion.h2>
           </motion.div>
 
