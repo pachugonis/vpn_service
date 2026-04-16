@@ -103,6 +103,26 @@ async def _check_servers_health():
                 if not server.is_active:
                     server.is_active = True
                     logger.info("Server %s is back online", server.name)
+
+                # Fetch active clients count
+                try:
+                    server.online_clients = await client.get_inbound_clients_count()
+                except Exception as e:
+                    logger.warning("Failed to get clients count for %s: %s", server.name, e)
+
+                # Fetch system stats (CPU, memory)
+                try:
+                    status = await client.get_server_status()
+                    cpu = status.get("cpu", 0)
+                    mem = status.get("mem", {})
+                    mem_current = mem.get("current", 0) if isinstance(mem, dict) else 0
+                    mem_total = mem.get("total", 1) if isinstance(mem, dict) else 1
+                    server.cpu_usage = round(cpu, 1)
+                    server.mem_usage = round(mem_current / mem_total * 100, 1) if mem_total else 0
+                    server.load_pct = int(max(server.cpu_usage, server.mem_usage))
+                except Exception as e:
+                    logger.warning("Failed to get server status for %s: %s", server.name, e)
+
             except Exception as e:
                 if server.is_active:
                     server.is_active = False

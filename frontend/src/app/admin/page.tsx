@@ -169,7 +169,9 @@ function ServersTab() {
               <th className="p-3">URL</th>
               <th className="p-3">Inbound</th>
               <th className="p-3">Статус</th>
-              <th className="p-3">Загрузка</th>
+              <th className="p-3">Клиенты</th>
+              <th className="p-3">CPU</th>
+              <th className="p-3">RAM</th>
               <th className="p-3"></th>
             </tr>
           </thead>
@@ -190,7 +192,9 @@ function ServersTab() {
                     <span className="text-slate-500">выкл</span>
                   )}
                 </td>
-                <td className="p-3">{s.load_pct}%</td>
+                <td className="p-3 font-mono">{s.online_clients}</td>
+                <td className="p-3 font-mono">{s.cpu_usage}%</td>
+                <td className="p-3 font-mono">{s.mem_usage}%</td>
                 <td className="p-3 text-right space-x-2">
                   <button
                     onClick={() => setEditing(s)}

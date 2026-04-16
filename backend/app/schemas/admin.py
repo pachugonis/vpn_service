@@ -51,6 +51,9 @@ class ServerAdminResponse(BaseModel):
     inbound_id: int
     is_active: bool
     load_pct: int
+    online_clients: int
+    cpu_usage: float
+    mem_usage: float
 
     model_config = {"from_attributes": True}
 

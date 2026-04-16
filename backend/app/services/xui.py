@@ -199,5 +199,35 @@ class XUIClient:
         except Exception as e:
             return False, f"Ошибка: {e}"
 
+    async def get_inbound_clients_count(self) -> int:
+        """Return the number of enabled clients on the configured inbound."""
+        await self._ensure_auth()
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            resp = await client.get(
+                f"{self.base_url}/panel/api/inbounds/get/{self.server.inbound_id}",
+                headers=self._get_headers(),
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if not data.get("success"):
+                return 0
+            obj = data.get("obj", {})
+            settings_raw = obj.get("settings", "{}")
+            settings = json.loads(settings_raw) if isinstance(settings_raw, str) else settings_raw
+            clients = settings.get("clients", [])
+            return sum(1 for c in clients if c.get("enable", True))
+
+    async def get_server_status(self) -> dict:
+        """Fetch system status (CPU, mem, disk, uptime) from 3x-ui."""
+        await self._ensure_auth()
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            resp = await client.post(
+                f"{self.base_url}/server/status",
+                headers=self._get_headers(),
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("obj", {})
+
     def get_sub_link(self, vpn_uuid: str) -> str:
         return f"{self.base_url}/subkakovo/{vpn_uuid}"

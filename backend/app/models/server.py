@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Integer, String
+from sqlalchemy import Boolean, Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -18,5 +18,8 @@ class Server(Base):
     inbound_id: Mapped[int] = mapped_column(Integer, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     load_pct: Mapped[int] = mapped_column(Integer, default=0)
+    online_clients: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    cpu_usage: Mapped[float] = mapped_column(default=0.0, server_default="0")
+    mem_usage: Mapped[float] = mapped_column(default=0.0, server_default="0")
 
     user_configs = relationship("UserServerConfig", back_populates="server", lazy="selectin")

@@ -197,6 +197,9 @@ export interface AdminServer {
   inbound_id: number;
   is_active: boolean;
   load_pct: number;
+  online_clients: number;
+  cpu_usage: number;
+  mem_usage: number;
 }
 
 export interface AdminPlan {
