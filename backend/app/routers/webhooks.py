@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -61,24 +61,23 @@ async def btcpay_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     logger.info("BTCPay webhook: %s", data)
 
     event_type = data.get("type")
-    metadata = data.get("metadata", {})
-    user_id = metadata.get("user_id")
-    plan_id = metadata.get("plan_id")
     invoice_id = data.get("invoiceId", "")
 
+    result = await db.execute(
+        select(Payment).where(Payment.external_id == invoice_id)
+    )
+    payment = result.scalar_one_or_none()
+    if not payment:
+        logger.error("BTCPay webhook: payment not found for invoiceId=%s", invoice_id)
+        return Response(status_code=200)
+
     if event_type == "InvoiceSettled":
-        await db.execute(
-            update(Payment)
-            .where(Payment.external_id == invoice_id)
-            .values(status="confirmed", updated_at=datetime.utcnow())
-        )
-        await activate_subscription(user_id, plan_id, db)
+        payment.status = "confirmed"
+        payment.updated_at = datetime.utcnow()
+        await activate_subscription(payment.user_id, payment.plan_id, db)
     elif event_type in ("InvoiceExpired", "InvoiceInvalid"):
-        await db.execute(
-            update(Payment)
-            .where(Payment.external_id == invoice_id)
-            .values(status="failed", updated_at=datetime.utcnow())
-        )
+        payment.status = "failed"
+        payment.updated_at = datetime.utcnow()
 
     await db.commit()
     return Response(status_code=200)
