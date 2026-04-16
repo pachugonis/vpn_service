@@ -199,35 +199,49 @@ class XUIClient:
         except Exception as e:
             return False, f"Ошибка: {e}"
 
-    async def get_inbound_clients_count(self) -> int:
-        """Return the number of enabled clients on the configured inbound."""
-        await self._ensure_auth()
+    async def get_server_stats(self) -> dict:
+        """Fetch clients count and system status in a single session."""
         async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
-            resp = await client.get(
-                f"{self.base_url}/panel/api/inbounds/get/{self.server.inbound_id}",
-                headers=self._get_headers(),
+            # Login
+            login_resp = await client.post(
+                f"{self.base_url}/login",
+                json={
+                    "username": self.server.username,
+                    "password": self.server.password,
+                },
             )
-            resp.raise_for_status()
-            data = resp.json()
-            if not data.get("success"):
-                return 0
-            obj = data.get("obj", {})
-            settings_raw = obj.get("settings", "{}")
-            settings = json.loads(settings_raw) if isinstance(settings_raw, str) else settings_raw
-            clients = settings.get("clients", [])
-            return sum(1 for c in clients if c.get("enable", True))
+            login_resp.raise_for_status()
+            cookie = login_resp.cookies.get("3x-ui")
+            headers = {"Cookie": f"3x-ui={cookie}"}
 
-    async def get_server_status(self) -> dict:
-        """Fetch system status (CPU, mem, disk, uptime) from 3x-ui."""
-        await self._ensure_auth()
-        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
-            resp = await client.post(
-                f"{self.base_url}/server/status",
-                headers=self._get_headers(),
+            stats: dict = {"online_clients": 0, "cpu": 0.0, "mem": {}}
+
+            # Clients count
+            inbound_resp = await client.get(
+                f"{self.base_url}/panel/api/inbounds/get/{self.server.inbound_id}",
+                headers=headers,
             )
-            resp.raise_for_status()
-            data = resp.json()
-            return data.get("obj", {})
+            if inbound_resp.status_code == 200:
+                data = inbound_resp.json()
+                if data.get("success"):
+                    obj = data.get("obj", {})
+                    settings_raw = obj.get("settings", "{}")
+                    settings = json.loads(settings_raw) if isinstance(settings_raw, str) else settings_raw
+                    clients = settings.get("clients", [])
+                    stats["online_clients"] = sum(1 for c in clients if c.get("enable", True))
+
+            # System status
+            status_resp = await client.post(
+                f"{self.base_url}/server/status",
+                headers=headers,
+            )
+            if status_resp.status_code == 200:
+                status_data = status_resp.json()
+                obj = status_data.get("obj", {})
+                stats["cpu"] = obj.get("cpu", 0)
+                stats["mem"] = obj.get("mem", {})
+
+            return stats
 
     def get_sub_link(self, vpn_uuid: str) -> str:
         return f"{self.base_url}/subkakovo/{vpn_uuid}"
