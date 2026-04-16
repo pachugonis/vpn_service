@@ -231,8 +231,8 @@ class XUIClient:
                     stats["online_clients"] = sum(1 for c in clients if c.get("enable", True))
 
             # System status
-            status_resp = await client.get(
-                f"{self.base_url}/server/status",
+            status_resp = await client.post(
+                f"{self.base_url}/panel/api/server/status",
                 headers=headers,
             )
             if status_resp.status_code == 200:
