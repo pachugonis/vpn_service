@@ -4,11 +4,10 @@ from datetime import datetime, timedelta
 
 from celery import Celery
 from celery.schedules import crontab
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.config import settings
-from app.database import async_session
+from app.database import async_session, sync_session
 from app.models.server import Server
 from app.models.subscription import Subscription
 from app.models.user import User
@@ -80,13 +79,9 @@ async def _expire_subscriptions():
 
 @celery_app.task
 def check_servers_health():
-    run_async(_check_servers_health())
-
-
-async def _check_servers_health():
-    async with async_session() as db:
-        result = await db.execute(select(Server))
-        servers = result.scalars().all()
+    """Sync DB reads/writes + async httpx calls to 3x-ui."""
+    with sync_session() as db:
+        servers = db.execute(select(Server)).scalars().all()
 
         for server in servers:
             client = XUIClient(
@@ -99,7 +94,7 @@ async def _check_servers_health():
                 )
             )
             try:
-                stats = await client.get_server_stats()
+                stats = run_async(client.get_server_stats())
                 if not server.is_active:
                     server.is_active = True
                     logger.info("Server %s is back online", server.name)
@@ -117,7 +112,7 @@ async def _check_servers_health():
                     server.is_active = False
                     logger.warning("Server %s is down: %s", server.name, e)
 
-        await db.commit()
+        db.commit()
 
 
 @celery_app.task
