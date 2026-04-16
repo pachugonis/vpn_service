@@ -49,7 +49,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {[
                 { label: "Настройка", href: "#" },
-                { label: "FAQ", href: "#" },
+                { label: "FAQ", href: "/faq" },
                 { label: "Поддержка", href: "/support" },
               ].map((item) => (
                 <li key={item.label}>
