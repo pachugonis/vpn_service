@@ -68,6 +68,12 @@ services:
     env_file: .env
     restart: unless-stopped
     command: node server.js
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   nginx:
     image: nginx:alpine
@@ -78,8 +84,10 @@ services:
       - "80:80"
       - "443:443"
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_started
+      frontend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
