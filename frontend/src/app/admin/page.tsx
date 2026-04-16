@@ -352,6 +352,7 @@ function PlansTab() {
             name: "",
             duration_days: 30,
             price_rub: 0,
+            price_usd: 0,
             traffic_gb: null,
             is_active: true,
           })
@@ -369,6 +370,7 @@ function PlansTab() {
               <th className="p-3">Название</th>
               <th className="p-3">Дней</th>
               <th className="p-3">₽</th>
+              <th className="p-3">$</th>
               <th className="p-3">Трафик</th>
               <th className="p-3">Статус</th>
               <th className="p-3"></th>
@@ -381,6 +383,7 @@ function PlansTab() {
                 <td className="p-3">{p.name}</td>
                 <td className="p-3">{p.duration_days}</td>
                 <td className="p-3">{p.price_rub}</td>
+                <td className="p-3">{p.price_usd}</td>
                 <td className="p-3">{p.traffic_gb ?? "∞"}</td>
                 <td className="p-3">
                   {p.is_active ? (
@@ -423,6 +426,12 @@ function PlansTab() {
             type="number"
             value={String(editing.price_rub ?? "")}
             onChange={(v) => setEditing({ ...editing, price_rub: Number(v) })}
+          />
+          <Input
+            label="Цена $"
+            type="number"
+            value={String(editing.price_usd ?? "")}
+            onChange={(v) => setEditing({ ...editing, price_usd: Number(v) })}
           />
           <Input
             label="Трафик (ГБ, пусто = безлимит)"

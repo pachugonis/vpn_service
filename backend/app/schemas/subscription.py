@@ -8,6 +8,7 @@ class PlanResponse(BaseModel):
     name: str
     duration_days: int
     price_rub: float
+    price_usd: float
     traffic_gb: int | None
 
     model_config = {"from_attributes": True}

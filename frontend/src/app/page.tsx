@@ -84,9 +84,9 @@ const features = [
 ];
 
 const fallbackPlans: Plan[] = [
-  { id: 1, name: "1 месяц", duration_days: 30, price_rub: 299, traffic_gb: null },
-  { id: 2, name: "3 месяца", duration_days: 90, price_rub: 749, traffic_gb: null },
-  { id: 3, name: "1 год", duration_days: 365, price_rub: 2388, traffic_gb: null },
+  { id: 1, name: "1 месяц", duration_days: 30, price_rub: 299, price_usd: 2.99, traffic_gb: null },
+  { id: 2, name: "3 месяца", duration_days: 90, price_rub: 749, price_usd: 7.49, traffic_gb: null },
+  { id: 3, name: "1 год", duration_days: 365, price_rub: 2388, price_usd: 23.88, traffic_gb: null },
 ];
 
 function monthlyPrice(plan: Plan): number {

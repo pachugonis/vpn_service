@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +6,6 @@ from app.models.payment import Payment
 from app.models.subscription import Subscription
 from app.models.user_server_config import UserServerConfig
 
-RUB_PER_USD = Decimal("100")
 
 from app.auth import require_admin
 from app.database import get_db
@@ -130,7 +127,6 @@ async def list_plans(db: AsyncSession = Depends(get_db)):
 @router.post("/plans", response_model=PlanAdminResponse, status_code=201)
 async def create_plan(data: PlanCreate, db: AsyncSession = Depends(get_db)):
     payload = data.model_dump()
-    payload["price_usd"] = (payload["price_rub"] / RUB_PER_USD).quantize(Decimal("0.01"))
     plan = Plan(**payload)
     db.add(plan)
     await db.commit()
@@ -146,8 +142,6 @@ async def update_plan(plan_id: int, data: PlanUpdate, db: AsyncSession = Depends
     updates = data.model_dump(exclude_unset=True)
     for k, v in updates.items():
         setattr(plan, k, v)
-    if "price_rub" in updates:
-        plan.price_usd = (updates["price_rub"] / RUB_PER_USD).quantize(Decimal("0.01"))
     await db.commit()
     await db.refresh(plan)
     return plan

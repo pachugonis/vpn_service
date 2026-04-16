@@ -59,6 +59,7 @@ class PlanCreate(BaseModel):
     name: str
     duration_days: int
     price_rub: Decimal
+    price_usd: Decimal
     traffic_gb: int | None = None
     is_active: bool = True
 
@@ -67,6 +68,7 @@ class PlanUpdate(BaseModel):
     name: str | None = None
     duration_days: int | None = None
     price_rub: Decimal | None = None
+    price_usd: Decimal | None = None
     traffic_gb: int | None = None
     is_active: bool | None = None
 
@@ -76,6 +78,7 @@ class PlanAdminResponse(BaseModel):
     name: str
     duration_days: int
     price_rub: Decimal
+    price_usd: Decimal
     traffic_gb: int | None
     is_active: bool
 

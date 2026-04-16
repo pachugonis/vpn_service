@@ -32,6 +32,7 @@ export interface Plan {
   name: string;
   duration_days: number;
   price_rub: number;
+  price_usd: number;
   traffic_gb: number | null;
 }
 
@@ -203,6 +204,7 @@ export interface AdminPlan {
   name: string;
   duration_days: number;
   price_rub: number;
+  price_usd: number;
   traffic_gb: number | null;
   is_active: boolean;
 }
