@@ -23,6 +23,8 @@ async def list_servers_public(db: AsyncSession = Depends(get_db)):
             "location": s.location,
             "flag_emoji": s.flag_emoji,
             "load_pct": s.load_pct,
+            "cpu_usage": s.cpu_usage,
+            "mem_usage": s.mem_usage,
         }
         for s in servers
     ]

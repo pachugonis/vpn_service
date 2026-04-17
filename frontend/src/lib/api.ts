@@ -59,6 +59,8 @@ export interface ServerInfo {
   location: string;
   flag_emoji: string | null;
   load_pct: number;
+  cpu_usage?: number;
+  mem_usage?: number;
 }
 
 export const api = {

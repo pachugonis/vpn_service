@@ -315,16 +315,18 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-center gap-4 sm:gap-6">
-                  {/* Load bar */}
+                  {/* Load bar — CPU usage */}
                   <div className="hidden sm:block min-w-[120px]">
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-500">Нагрузка</span>
-                      <span className="text-slate-400 font-mono">{s.load_pct}%</span>
+                      <span className="text-slate-500">CPU</span>
+                      <span className="text-slate-400 font-mono">
+                        {(s.cpu_usage ?? s.load_pct).toFixed(1)}%
+                      </span>
                     </div>
                     <div className="h-1.5 rounded-full bg-void-600 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-neon-green to-neon-cyan transition-all"
-                        style={{ width: `${s.load_pct}%` }}
+                        style={{ width: `${Math.min(s.cpu_usage ?? s.load_pct, 100)}%` }}
                       />
                     </div>
                   </div>
