@@ -230,15 +230,33 @@ class XUIClient:
                     clients = settings.get("clients", [])
                     stats["online_clients"] = sum(1 for c in clients if c.get("enable", True))
 
-            # System status
+            # System status — try POST first, fall back to GET
             status_resp = await client.post(
                 f"{self.base_url}/panel/api/server/status",
                 headers=headers,
             )
+            if status_resp.status_code != 200:
+                logger.warning(
+                    "server/status POST %s returned %s, trying GET",
+                    self.server.name, status_resp.status_code,
+                )
+                status_resp = await client.get(
+                    f"{self.base_url}/panel/api/server/status",
+                    headers=headers,
+                )
             if status_resp.status_code == 200:
                 status_data = status_resp.json()
+                logger.info(
+                    "server/status %s response: %s",
+                    self.server.name, str(status_data)[:500],
+                )
                 obj = status_data.get("obj", {})
-                stats["cpu"] = obj.get("cpu", 0)
+                # cpu can be a list (per-core) or a single float
+                raw_cpu = obj.get("cpu", 0) or obj.get("cpuPercent", 0)
+                if isinstance(raw_cpu, list):
+                    stats["cpu"] = sum(raw_cpu) / len(raw_cpu) if raw_cpu else 0.0
+                else:
+                    stats["cpu"] = float(raw_cpu) if raw_cpu else 0.0
                 stats["mem"] = obj.get("mem", {})
 
             return stats

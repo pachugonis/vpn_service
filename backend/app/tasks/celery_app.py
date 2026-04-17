@@ -101,11 +101,18 @@ def check_servers_health():
 
                 server.online_clients = stats.get("online_clients", 0)
                 cpu = stats.get("cpu", 0)
+                if isinstance(cpu, list):
+                    cpu = sum(cpu) / len(cpu) if cpu else 0.0
+                cpu = float(cpu or 0)
                 mem = stats.get("mem", {})
                 mem_current = mem.get("current", 0) if isinstance(mem, dict) else 0
                 mem_total = mem.get("total", 1) if isinstance(mem, dict) else 1
                 server.cpu_usage = round(cpu, 1)
                 server.mem_usage = round(mem_current / mem_total * 100, 1) if mem_total else 0
+                logger.info(
+                    "Server %s stats: clients=%d cpu=%.1f mem=%.1f%%",
+                    server.name, server.online_clients, server.cpu_usage, server.mem_usage,
+                )
                 server.load_pct = int(max(server.cpu_usage, server.mem_usage))
             except Exception as e:
                 if server.is_active:

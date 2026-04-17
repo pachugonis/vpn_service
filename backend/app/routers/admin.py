@@ -1,3 +1,6 @@
+import asyncio
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,10 +50,45 @@ router = APIRouter(dependencies=[Depends(require_admin)])
 
 # ---------- Servers ----------
 
+logger = logging.getLogger(__name__)
+
+
 @router.get("/servers", response_model=list[ServerAdminResponse])
 async def list_servers(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Server).order_by(Server.id))
-    return result.scalars().all()
+    servers = result.scalars().all()
+
+    # Fetch live stats from each active server in parallel
+    async def _update_stats(server: Server) -> None:
+        if not server.is_active:
+            return
+        try:
+            client = XUIClient(
+                XUIServer(
+                    name=server.name,
+                    url=server.url,
+                    username=server.username,
+                    password=server.password,
+                    inbound_id=server.inbound_id,
+                )
+            )
+            stats = await client.get_server_stats()
+            server.online_clients = stats.get("online_clients", 0)
+            cpu = stats.get("cpu", 0)
+            if isinstance(cpu, list):
+                cpu = sum(cpu) / len(cpu) if cpu else 0.0
+            server.cpu_usage = round(float(cpu or 0), 1)
+            mem = stats.get("mem", {})
+            mem_current = mem.get("current", 0) if isinstance(mem, dict) else 0
+            mem_total = mem.get("total", 1) if isinstance(mem, dict) else 1
+            server.mem_usage = round(mem_current / mem_total * 100, 1) if mem_total else 0
+        except Exception as e:
+            logger.warning("Failed to fetch stats for %s: %s", server.name, e)
+
+    await asyncio.gather(*[_update_stats(s) for s in servers])
+    await db.commit()
+
+    return servers
 
 
 @router.post("/servers/test-connection", response_model=ServerTestResult)
