@@ -25,7 +25,7 @@ const features = [
       </svg>
     ),
     title: "Молниеносная скорость",
-    desc: "Протокол VLESS + XTLS-Reality обеспечивает минимальные задержки и максимальную пропускную способность.",
+    desc: "Современный протокол обеспечивает минимальные задержки и максимальную пропускную способность.",
   },
   {
     icon: (
@@ -69,7 +69,7 @@ const features = [
       </svg>
     ),
     title: "Любое устройство",
-    desc: "Работает с любым Xray-совместимым клиентом: V2rayN, Nekoray, Streisand, Hiddify.",
+    desc: "Работает на всех устройствах: Windows, Mac, IPhone, Android.",
   },
   {
     icon: (
@@ -149,19 +149,6 @@ export default function Home() {
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[90vw] max-w-[600px] h-[90vw] max-h-[600px] rounded-full bg-gradient-to-b from-neon-cyan/[0.06] to-transparent blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto text-center relative">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-neon-cyan/20 bg-neon-cyan/[0.05] mb-8"
-          >
-            <span className="status-dot !w-[6px] !h-[6px]" />
-            <span className="text-xs font-medium text-neon-cyan tracking-wide">
-              VLESS + XTLS-Reality
-            </span>
-          </motion.div>
-
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -177,7 +164,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Быстрый VPN с серверами в Европе. Современный протокол, нулевые логи,
+            Быстрый VPN с серверами в Европе и США. Современный протокол, нулевые логи,
             моментальное подключение. От{" "}
             <span className="text-white font-semibold">{minMonthly} ₽/мес</span>.
           </motion.p>
