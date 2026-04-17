@@ -318,7 +318,7 @@ export default function Home() {
                   {/* Load bar — CPU usage */}
                   <div className="hidden sm:block min-w-[120px]">
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-500">CPU</span>
+                      <span className="text-slate-500">Нагрузка</span>
                       <span className="text-slate-400 font-mono">
                         {(s.cpu_usage ?? s.load_pct).toFixed(1)}%
                       </span>
