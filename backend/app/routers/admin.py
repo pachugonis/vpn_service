@@ -142,6 +142,21 @@ async def update_server(server_id: int, data: ServerUpdate, db: AsyncSession = D
     return server
 
 
+@router.post("/servers/{server_id}/resync")
+async def resync_server(server_id: int, db: AsyncSession = Depends(get_db)):
+    """Re-provision every active user onto this server. Safe to call
+    repeatedly — existing clients get updateClient, missing ones get
+    addClient. UserServerConfig rows are only written on successful
+    3x-ui calls."""
+    server = await db.get(Server, server_id)
+    if not server:
+        raise HTTPException(status_code=404, detail="Server not found")
+    results = await sync_all_users_to_server(server, db)
+    ok = sum(1 for r in results if r.get("status") == "ok")
+    errors = [r for r in results if r.get("status") != "ok"]
+    return {"total": len(results), "ok": ok, "errors": errors}
+
+
 @router.delete("/servers/{server_id}", status_code=204)
 async def delete_server(server_id: int, db: AsyncSession = Depends(get_db)):
     server = await db.get(Server, server_id)

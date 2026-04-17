@@ -138,6 +138,11 @@ export const api = {
       }),
     deleteServer: (id: number) =>
       request<void>(`/admin/servers/${id}`, { method: "DELETE" }),
+    resyncServer: (id: number) =>
+      request<{ total: number; ok: number; errors: { user_id: number; error: string }[] }>(
+        `/admin/servers/${id}/resync`,
+        { method: "POST" }
+      ),
     testServerConnection: (data: {
       url: string;
       username: string;

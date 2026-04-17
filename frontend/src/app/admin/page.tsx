@@ -139,6 +139,19 @@ function ServersTab() {
     }
   };
 
+  const resync = async (id: number) => {
+    try {
+      const r = await api.admin.resyncServer(id);
+      const errLines = r.errors.map((e) => `user ${e.user_id}: ${e.error}`).join("\n");
+      alert(
+        `Пересинхронизация: ${r.ok}/${r.total} успешно.` +
+          (errLines ? `\n\nОшибки:\n${errLines}` : "")
+      );
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
+
   return (
     <div>
       <button
@@ -201,6 +214,12 @@ function ServersTab() {
                     className="text-neon-cyan hover:underline text-xs"
                   >
                     править
+                  </button>
+                  <button
+                    onClick={() => resync(s.id)}
+                    className="text-amber-400 hover:underline text-xs"
+                  >
+                    ресинк
                   </button>
                   <button
                     onClick={() => remove(s.id)}

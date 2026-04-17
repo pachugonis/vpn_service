@@ -39,12 +39,19 @@ async def sync_client_to_all_servers(
 ) -> list[dict]:
     """Upsert the client on every active server: try addClient; if 3x-ui
     reports it already exists, fall back to updateClient (full payload).
-    Always persist a UserServerConfig row so the dashboard has something
-    to show."""
+    UserServerConfig is persisted only when the 3x-ui call actually
+    succeeded — otherwise the dashboard would advertise a sub_link that
+    does not resolve on the server."""
     servers = await get_all_active_servers(db)
 
     async def sync_server(server: Server) -> dict:
         client = _make_client(server)
+        try:
+            await client._ensure_auth()
+        except Exception as e:
+            logger.error("Login failed for %s: %s", server.name, e)
+            return {"server": server.name, "status": "error", "error": f"login: {e}"}
+
         status = "ok"
         error: str | None = None
         try:
@@ -62,21 +69,22 @@ async def sync_client_to_all_servers(
             error = str(e)
             logger.error("Failed to sync client on %s: %s", server.name, e)
 
-        sub_base = (server.sub_url or server.url).rstrip("/")
-        sub_link = f"{sub_base}/subkakovo/{vpn_uuid}"
-        try:
-            await db.execute(
-                insert(UserServerConfig)
-                .values(
-                    user_id=user_id,
-                    server_id=server.id,
-                    vpn_uuid=vpn_uuid,
-                    sub_link=sub_link,
+        if status == "ok":
+            sub_base = (server.sub_url or server.url).rstrip("/")
+            sub_link = f"{sub_base}/subkakovo/{vpn_uuid}"
+            try:
+                await db.execute(
+                    insert(UserServerConfig)
+                    .values(
+                        user_id=user_id,
+                        server_id=server.id,
+                        vpn_uuid=vpn_uuid,
+                        sub_link=sub_link,
+                    )
+                    .on_conflict_do_nothing()
                 )
-                .on_conflict_do_nothing()
-            )
-        except Exception as e:
-            logger.error("Failed to persist UserServerConfig for %s: %s", server.name, e)
+            except Exception as e:
+                logger.error("Failed to persist UserServerConfig for %s: %s", server.name, e)
 
         return {"server": server.name, "status": status, "error": error}
 
@@ -125,6 +133,14 @@ async def sync_all_users_to_server(server: Server, db: AsyncSession) -> list[dic
     rows = result.all()
 
     client = _make_client(server)
+    try:
+        await client._ensure_auth()
+    except Exception as e:
+        logger.error("Login failed for %s, cannot sync users: %s", server.name, e)
+        return [
+            {"user_id": u.id, "status": "error", "error": f"login: {e}"}
+            for u, _ in rows
+        ]
 
     async def sync_user(user: User, sub: Subscription) -> dict:
         expire_days = max(1, (sub.ends_at - datetime.utcnow()).days)
@@ -148,26 +164,27 @@ async def sync_all_users_to_server(server: Server, db: AsyncSession) -> list[dic
             error = str(e)
             logger.error("Failed to sync user %s on %s: %s", user.id, server.name, e)
 
-        sub_base = (server.sub_url or server.url).rstrip("/")
-        sub_link = f"{sub_base}/subkakovo/{vpn_uuid}"
-        try:
-            await db.execute(
-                insert(UserServerConfig)
-                .values(
-                    user_id=user.id,
-                    server_id=server.id,
-                    vpn_uuid=vpn_uuid,
-                    sub_link=sub_link,
+        if status == "ok":
+            sub_base = (server.sub_url or server.url).rstrip("/")
+            sub_link = f"{sub_base}/subkakovo/{vpn_uuid}"
+            try:
+                await db.execute(
+                    insert(UserServerConfig)
+                    .values(
+                        user_id=user.id,
+                        server_id=server.id,
+                        vpn_uuid=vpn_uuid,
+                        sub_link=sub_link,
+                    )
+                    .on_conflict_do_nothing()
                 )
-                .on_conflict_do_nothing()
-            )
-        except Exception as e:
-            logger.error(
-                "Failed to persist UserServerConfig for user %s on %s: %s",
-                user.id,
-                server.name,
-                e,
-            )
+            except Exception as e:
+                logger.error(
+                    "Failed to persist UserServerConfig for user %s on %s: %s",
+                    user.id,
+                    server.name,
+                    e,
+                )
         return {"user_id": user.id, "status": status, "error": error}
 
     results = await asyncio.gather(*[sync_user(u, s) for u, s in rows])

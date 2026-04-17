@@ -150,7 +150,12 @@ class XUIClient:
                 },
             )
             logger.info("update_client %s -> %s %s", self.server.name, resp.status_code, resp.text[:200])
-            return resp.json()
+            data = resp.json()
+            if not data.get("success", True):
+                raise RuntimeError(
+                    f"3x-ui updateClient failed on {self.server.name}: {data.get('msg')}"
+                )
+            return data
 
     async def test_connection(self) -> tuple[bool, str]:
         """Проверка: логин + наличие inbound с заданным id."""
