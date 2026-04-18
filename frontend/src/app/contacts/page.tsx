@@ -67,6 +67,22 @@ export default function ContactsPage() {
 
           <div className="glass-card p-6 sm:p-8">
             <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+              Реквизиты
+            </h2>
+            <dl className="text-sm space-y-2">
+              <div className="flex flex-col sm:flex-row sm:gap-3">
+                <dt className="text-slate-500 sm:w-24 shrink-0">ФИО</dt>
+                <dd className="text-slate-300">Пачугонис Игорь Людасович</dd>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:gap-3">
+                <dt className="text-slate-500 sm:w-24 shrink-0">ИНН</dt>
+                <dd className="text-slate-300 font-mono">320400001200</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="glass-card p-6 sm:p-8">
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
               Полезные ссылки
             </h2>
             <ul className="space-y-2 text-sm">
