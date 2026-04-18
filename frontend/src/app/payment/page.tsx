@@ -141,7 +141,7 @@ function PaymentForm() {
           </div>
 
           <p className="text-xs text-slate-600 text-center mt-4">
-            Безопасная оплата через Platega и BTCPay Server
+            Безопасная оплата через Yookassa и BTCPay Server
           </p>
         </motion.div>
       </div>
