@@ -85,8 +85,8 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold text-white mb-3">8. Контакты</h2>
             <p>
               По вопросам обработки персональных данных напишите нам на{" "}
-              <a href="mailto:support@kakovo.com" className="text-neon-cyan hover:underline">
-                support@kakovo.com
+              <a href="mailto:ffs.pachugonis@gmail.com" className="text-neon-cyan hover:underline">
+                ffs.pachugonis@gmail.com
               </a>
               .
             </p>

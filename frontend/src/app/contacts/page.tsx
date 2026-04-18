@@ -26,10 +26,10 @@ export default function ContactsPage() {
               Электронная почта
             </h2>
             <a
-              href="mailto:support@kakovo.com"
+              href="mailto:ffs.pachugonis@gmail.com"
               className="text-lg text-neon-cyan hover:underline"
             >
-              support@kakovo.com
+              ffs.pachugonis@gmail.com
             </a>
             <p className="text-sm text-slate-500 mt-2 leading-relaxed">
               Общие вопросы, сотрудничество, работа с персональными данными.
