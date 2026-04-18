@@ -32,7 +32,11 @@ from app.schemas.admin import (
     UserUpdate,
 )
 from app.services.subscription import activate_subscription
-from app.services.xui_manager import remove_client_from_all_servers, sync_all_users_to_server
+from app.services.xui_manager import (
+    remove_all_users_from_server,
+    remove_client_from_all_servers,
+    sync_all_users_to_server,
+)
 from app.services.xui import XUIClient, XUIServer
 
 
@@ -162,6 +166,10 @@ async def delete_server(server_id: int, db: AsyncSession = Depends(get_db)):
     server = await db.get(Server, server_id)
     if not server:
         raise HTTPException(status_code=404, detail="Server not found")
+    try:
+        await remove_all_users_from_server(server, db)
+    except Exception as e:
+        logger.warning("Failed to purge clients from %s before delete: %s", server.name, e)
     await db.execute(
         delete(UserServerConfig).where(UserServerConfig.server_id == server_id)
     )

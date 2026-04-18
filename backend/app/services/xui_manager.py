@@ -112,6 +112,35 @@ async def remove_client_from_all_servers(vpn_uuid: str, db: AsyncSession) -> lis
     return list(await asyncio.gather(*[remove_from_server(s) for s in servers]))
 
 
+async def remove_all_users_from_server(server: Server, db: AsyncSession) -> list[dict]:
+    """Delete every UserServerConfig's client from a single server's 3x-ui
+    panel. Used when a server is removed from the admin panel so that
+    stale clients do not linger on the VPN node."""
+    result = await db.execute(
+        select(UserServerConfig.vpn_uuid).where(UserServerConfig.server_id == server.id)
+    )
+    uuids = [str(u) for u in result.scalars().all()]
+    if not uuids:
+        return []
+
+    client = _make_client(server)
+    try:
+        await client._ensure_auth()
+    except Exception as e:
+        logger.error("Login failed for %s, cannot remove users: %s", server.name, e)
+        return [{"vpn_uuid": u, "status": "error", "error": f"login: {e}"} for u in uuids]
+
+    async def remove_one(vpn_uuid: str) -> dict:
+        try:
+            await client.delete_client(vpn_uuid)
+            return {"vpn_uuid": vpn_uuid, "status": "ok"}
+        except Exception as e:
+            logger.error("Failed to remove %s from %s: %s", vpn_uuid, server.name, e)
+            return {"vpn_uuid": vpn_uuid, "status": "error", "error": str(e)}
+
+    return list(await asyncio.gather(*[remove_one(u) for u in uuids]))
+
+
 async def sync_all_users_to_server(server: Server, db: AsyncSession) -> list[dict]:
     """Provision every user with an active subscription onto a single server.
     Used when a new server is added so existing subscribers get a config
