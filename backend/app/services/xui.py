@@ -157,6 +157,24 @@ class XUIClient:
                 )
             return data
 
+    async def get_inbound(self) -> dict:
+        """Fetch full inbound JSON (used to build VLESS URIs directly, without
+        relying on 3x-ui's optional subscription service being configured
+        with a matching sub path on every server)."""
+        await self._ensure_auth()
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            resp = await client.get(
+                f"{self.base_url}/panel/api/inbounds/get/{self.server.inbound_id}",
+                headers=self._get_headers(),
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if not data.get("success"):
+                raise RuntimeError(
+                    f"3x-ui getInbound failed on {self.server.name}: {data.get('msg')}"
+                )
+            return data.get("obj") or {}
+
     async def test_connection(self) -> tuple[bool, str]:
         """Проверка: логин + наличие inbound с заданным id."""
         try:
