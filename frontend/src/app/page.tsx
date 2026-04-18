@@ -288,10 +288,10 @@ export default function Home() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
-            className="space-y-3"
+            className="grid grid-cols-3 gap-2 sm:gap-3"
           >
             {servers.length === 0 && (
-              <div className="text-center text-sm text-slate-500 py-8">
+              <div className="col-span-3 text-center text-sm text-slate-500 py-8">
                 Серверы скоро появятся
               </div>
             )}
@@ -300,41 +300,16 @@ export default function Home() {
                 key={s.id}
                 variants={fadeUp}
                 custom={i}
-                className="glass-card px-4 sm:px-6 py-5 flex items-center justify-between gap-3"
+                className="glass-card px-2 py-2 flex items-center gap-2"
               >
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl">{s.flag_emoji || "\u{1F310}"}</span>
-                  <div>
-                    <div className="font-display font-semibold text-white text-sm">
-                      {s.name}
-                    </div>
-                    <div className="text-xs text-slate-500 uppercase">
-                      {s.location}
-                    </div>
+                <span className="text-base leading-none">{s.flag_emoji || "\u{1F310}"}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="font-display font-semibold text-white text-[11px] truncate">
+                    {s.name}
                   </div>
-                </div>
-
-                <div className="flex items-center gap-4 sm:gap-6">
-                  {/* Load bar — CPU usage */}
-                  <div className="hidden sm:block min-w-[120px]">
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-500">Нагрузка</span>
-                      <span className="text-slate-400 font-mono">
-                        {(s.cpu_usage ?? s.load_pct).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-void-600 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-neon-green to-neon-cyan transition-all"
-                        style={{ width: `${Math.min(s.cpu_usage ?? s.load_pct, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Status */}
-                  <div className="flex items-center gap-2">
-                    <span className="status-dot" />
-                    <span className="text-xs text-neon-green font-medium">Online</span>
+                  <div className="flex items-center gap-1 text-[9px] text-neon-green font-medium">
+                    <span className="status-dot !w-1.5 !h-1.5" />
+                    Online
                   </div>
                 </div>
               </motion.div>
