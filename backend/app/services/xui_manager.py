@@ -171,6 +171,9 @@ async def sync_all_users_to_server(server: Server, db: AsyncSession) -> list[dic
             for u, _ in rows
         ]
 
+    # 3x-ui rewrites the entire inbound clients array on each add/update, so
+    # parallel calls against one server race and silently drop entries. Run
+    # per-user requests sequentially against a single server.
     async def sync_user(user: User, sub: Subscription) -> dict:
         expire_days = max(1, (sub.ends_at - datetime.utcnow()).days)
         vpn_uuid = str(user.vpn_uuid)
@@ -216,9 +219,11 @@ async def sync_all_users_to_server(server: Server, db: AsyncSession) -> list[dic
                 )
         return {"user_id": user.id, "status": status, "error": error}
 
-    results = await asyncio.gather(*[sync_user(u, s) for u, s in rows])
+    results: list[dict] = []
+    for user, sub in rows:
+        results.append(await sync_user(user, sub))
     await db.commit()
-    return list(results)
+    return results
 
 
 async def update_expiry_on_all_servers(

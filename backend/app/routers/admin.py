@@ -119,9 +119,15 @@ async def create_server(data: ServerCreate, db: AsyncSession = Depends(get_db)):
 
     if server.is_active:
         try:
-            await sync_all_users_to_server(server, db)
-        except Exception:
-            pass
+            results = await sync_all_users_to_server(server, db)
+            errors = [r for r in results if r.get("status") != "ok"]
+            if errors:
+                logger.warning(
+                    "Server %s created, %s/%s users failed to sync: %s",
+                    server.name, len(errors), len(results), errors,
+                )
+        except Exception as e:
+            logger.exception("Initial sync failed for server %s: %s", server.name, e)
 
     return server
 
@@ -139,9 +145,15 @@ async def update_server(server_id: int, data: ServerUpdate, db: AsyncSession = D
 
     if server.is_active and not was_active:
         try:
-            await sync_all_users_to_server(server, db)
-        except Exception:
-            pass
+            results = await sync_all_users_to_server(server, db)
+            errors = [r for r in results if r.get("status") != "ok"]
+            if errors:
+                logger.warning(
+                    "Server %s reactivated, %s/%s users failed to sync: %s",
+                    server.name, len(errors), len(results), errors,
+                )
+        except Exception as e:
+            logger.exception("Reactivation sync failed for server %s: %s", server.name, e)
 
     return server
 
