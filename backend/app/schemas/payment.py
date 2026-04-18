@@ -6,6 +6,10 @@ class PaymentCreate(BaseModel):
     payment_method: int = 10  # 10=карты, 2=СБП
 
 
+class YookassaPaymentCreate(BaseModel):
+    plan_id: int
+
+
 class BtcPaymentCreate(BaseModel):
     plan_id: int
 
@@ -20,3 +24,14 @@ class PaymentStatusResponse(BaseModel):
     status: str
     amount: float
     currency: str
+
+
+class PaymentMethodInfo(BaseModel):
+    id: str
+    title: str
+    description: str
+    enabled: bool
+
+
+class PaymentMethodsResponse(BaseModel):
+    methods: list[PaymentMethodInfo]

@@ -2,14 +2,52 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import get_current_user
+from app.config import settings
 from app.database import get_db
 from app.models.payment import Payment
 from app.models.plan import Plan
 from app.models.user import User
-from app.schemas.payment import BtcPaymentCreate, PaymentCreate, PaymentResponse
-from app.services import btcpay, platega
+from app.schemas.payment import (
+    BtcPaymentCreate,
+    PaymentCreate,
+    PaymentMethodsResponse,
+    PaymentMethodInfo,
+    PaymentResponse,
+    YookassaPaymentCreate,
+)
+from app.services import btcpay, platega, yookassa
 
 router = APIRouter()
+
+
+@router.get("/methods", response_model=PaymentMethodsResponse)
+async def list_payment_methods():
+    """Возвращает список доступных платёжных провайдеров.
+
+    Активны только те, для которых заполнены ключи в .env.
+    """
+    return PaymentMethodsResponse(
+        methods=[
+            PaymentMethodInfo(
+                id="platega",
+                title="Platega",
+                description="Оплата картой РФ / СБП",
+                enabled=settings.platega_enabled,
+            ),
+            PaymentMethodInfo(
+                id="yookassa",
+                title="ЮKassa",
+                description="Оплата картой РФ / СБП",
+                enabled=settings.yookassa_enabled,
+            ),
+            PaymentMethodInfo(
+                id="btcpay",
+                title="Bitcoin",
+                description="Оплата Bitcoin / Lightning",
+                enabled=settings.btcpay_enabled,
+            ),
+        ]
+    )
 
 
 @router.post("/platega/create", response_model=PaymentResponse)
@@ -18,6 +56,9 @@ async def create_platega_payment(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    if not settings.platega_enabled:
+        raise HTTPException(status_code=400, detail="Platega payments disabled")
+
     plan = await db.get(Plan, data.plan_id)
     if not plan or not plan.is_active:
         raise HTTPException(status_code=404, detail="Plan not found")
@@ -47,12 +88,52 @@ async def create_platega_payment(
     )
 
 
+@router.post("/yookassa/create", response_model=PaymentResponse)
+async def create_yookassa_payment(
+    data: YookassaPaymentCreate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if not settings.yookassa_enabled:
+        raise HTTPException(status_code=400, detail="Yookassa payments disabled")
+
+    plan = await db.get(Plan, data.plan_id)
+    if not plan or not plan.is_active:
+        raise HTTPException(status_code=404, detail="Plan not found")
+
+    result = await yookassa.create_payment(
+        amount=float(plan.price_rub),
+        user_id=user.id,
+        plan_id=plan.id,
+    )
+
+    payment = Payment(
+        user_id=user.id,
+        plan_id=plan.id,
+        provider="yookassa",
+        external_id=result["id"],
+        amount=plan.price_rub,
+        currency="RUB",
+        status="pending",
+    )
+    db.add(payment)
+    await db.commit()
+
+    return PaymentResponse(
+        payment_id=result["id"],
+        redirect_url=result["confirmation"]["confirmation_url"],
+    )
+
+
 @router.post("/btcpay/create", response_model=PaymentResponse)
 async def create_btcpay_payment(
     data: BtcPaymentCreate,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    if not settings.btcpay_enabled:
+        raise HTTPException(status_code=400, detail="BTCPay payments disabled")
+
     plan = await db.get(Plan, data.plan_id)
     if not plan or not plan.is_active:
         raise HTTPException(status_code=404, detail="Plan not found")

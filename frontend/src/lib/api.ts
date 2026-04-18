@@ -109,6 +109,9 @@ export const api = {
   getPublicSettings: () =>
     request<{ maintenance_mode: boolean }>("/settings"),
 
+  getPaymentMethods: () =>
+    request<{ methods: PaymentMethodInfo[] }>("/payments/methods"),
+
   createPlategaPayment: (planId: number, paymentMethod: number = 10) =>
     request<{ payment_id: string; redirect_url: string }>(
       "/payments/platega/create",
@@ -116,6 +119,12 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ plan_id: planId, payment_method: paymentMethod }),
       }
+    ),
+
+  createYookassaPayment: (planId: number) =>
+    request<{ payment_id: string; redirect_url: string }>(
+      "/payments/yookassa/create",
+      { method: "POST", body: JSON.stringify({ plan_id: planId }) }
     ),
 
   createBtcPayment: (planId: number) =>
@@ -191,6 +200,13 @@ export const api = {
       }),
   },
 };
+
+export interface PaymentMethodInfo {
+  id: "platega" | "yookassa" | "btcpay";
+  title: string;
+  description: string;
+  enabled: boolean;
+}
 
 export interface AdminServer {
   id: number;

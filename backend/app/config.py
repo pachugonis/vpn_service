@@ -19,11 +19,29 @@ class Settings(BaseSettings):
     PLATEGA_MERCHANT_ID: str = ""
     PLATEGA_SECRET: str = ""
 
+    # Yookassa
+    YOOKASSA_SHOP_ID: str = ""
+    YOOKASSA_SECRET_KEY: str = ""
+
     # BTCPay Server
     BTCPAY_URL: str = ""
     BTCPAY_STORE_ID: str = ""
     BTCPAY_API_KEY: str = ""
     BTCPAY_WEBHOOK_SECRET: str = ""
+
+    @property
+    def platega_enabled(self) -> bool:
+        return bool(self.PLATEGA_MERCHANT_ID and self.PLATEGA_SECRET)
+
+    @property
+    def yookassa_enabled(self) -> bool:
+        return bool(self.YOOKASSA_SHOP_ID and self.YOOKASSA_SECRET_KEY)
+
+    @property
+    def btcpay_enabled(self) -> bool:
+        return bool(
+            self.BTCPAY_URL and self.BTCPAY_STORE_ID and self.BTCPAY_API_KEY
+        )
 
     # Frontend
     FRONTEND_URL: str = "http://localhost:3000"
