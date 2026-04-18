@@ -51,6 +51,7 @@ export default function Footer() {
                 { label: "Настройка", href: "#" },
                 { label: "FAQ", href: "/faq" },
                 { label: "Поддержка", href: "/support" },
+                { label: "Контакты", href: "/contacts" },
               ].map((item) => (
                 <li key={item.label}>
                   <Link
