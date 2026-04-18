@@ -11,7 +11,7 @@ from app.models.subscription import Subscription
 from app.models.user import User
 from app.services.email import send_sub_link_email
 from app.services.xui_manager import (
-    remove_client_from_all_servers,
+    remove_client_everywhere,
     sync_client_to_all_servers,
 )
 
@@ -85,7 +85,7 @@ async def revoke_subscription(user_id: int, db: AsyncSession):
         return
 
     if user.vpn_uuid:
-        await remove_client_from_all_servers(str(user.vpn_uuid), db)
+        await remove_client_everywhere(str(user.vpn_uuid), db)
 
     user.is_active = False
     db.add(user)

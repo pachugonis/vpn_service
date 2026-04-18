@@ -34,7 +34,7 @@ from app.schemas.admin import (
 from app.services.subscription import activate_subscription
 from app.services.xui_manager import (
     remove_all_users_from_server,
-    remove_client_from_all_servers,
+    remove_client_everywhere,
     sync_all_users_to_server,
 )
 from app.services.xui import XUIClient, XUIServer
@@ -283,9 +283,9 @@ async def delete_user(
 
     if user.vpn_uuid:
         try:
-            await remove_client_from_all_servers(str(user.vpn_uuid), db)
-        except Exception:
-            pass
+            await remove_client_everywhere(str(user.vpn_uuid), db)
+        except Exception as e:
+            logger.warning("Failed to purge vpn client for user %s: %s", user_id, e)
 
     await db.execute(delete(UserServerConfig).where(UserServerConfig.user_id == user_id))
     await db.execute(delete(Subscription).where(Subscription.user_id == user_id))

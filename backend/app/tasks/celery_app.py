@@ -12,7 +12,7 @@ from app.models.server import Server
 from app.models.subscription import Subscription
 from app.models.user import User
 from app.services.xui import XUIClient, XUIServer
-from app.services.xui_manager import remove_client_from_all_servers
+from app.services.xui_manager import remove_client_everywhere
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ async def _expire_subscriptions():
         for sub in expired_subs:
             user = await db.get(User, sub.user_id)
             if user and user.vpn_uuid:
-                await remove_client_from_all_servers(str(user.vpn_uuid), db)
+                await remove_client_everywhere(str(user.vpn_uuid), db)
 
             sub.is_active = False
             if user:

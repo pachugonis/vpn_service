@@ -121,8 +121,9 @@ class XUIClient:
         traffic_gb: int = 0,
     ) -> dict:
         """Full-payload update. 3x-ui replaces the client record from the
-        supplied settings, so partial payloads wipe email/flow/traffic and
-        cause 3x-ui to regenerate a random 8-char email."""
+        supplied settings, so partial payloads wipe email/flow/traffic/subId
+        and cause 3x-ui to regenerate a random 8-char email and 16-char subId
+        (which in turn breaks the /subkakovo/<vpn_uuid> subscription URL)."""
         await self._ensure_auth()
         expire_ms = _expiry_ms(expire_days)
         traffic_bytes = traffic_gb * 1024**3 if traffic_gb else 0
@@ -143,6 +144,8 @@ class XUIClient:
                                     "totalGB": traffic_bytes,
                                     "limitIp": 0,
                                     "flow": "xtls-rprx-vision",
+                                    "subId": vpn_uuid,
+                                    "tgId": "",
                                 }
                             ]
                         }
