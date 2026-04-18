@@ -183,3 +183,35 @@ async def check_payment_status(
         "amount": float(payment.amount),
         "currency": payment.currency,
     }
+
+
+@router.get("/latest")
+async def get_latest_payment(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Возвращает статус последнего платежа пользователя.
+
+    Используется success-страницей, чтобы отличить успешную оплату от
+    отмены (для провайдеров с единым return_url, напр. Yookassa).
+    """
+    from sqlalchemy import select
+
+    result = await db.execute(
+        select(Payment)
+        .where(Payment.user_id == user.id)
+        .order_by(Payment.created_at.desc())
+        .limit(1)
+    )
+    payment = result.scalar_one_or_none()
+    if not payment:
+        return None
+
+    return {
+        "payment_id": payment.external_id,
+        "provider": payment.provider,
+        "status": payment.status,
+        "amount": float(payment.amount),
+        "currency": payment.currency,
+        "created_at": payment.created_at.isoformat(),
+    }

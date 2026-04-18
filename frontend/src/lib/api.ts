@@ -133,6 +133,16 @@ export const api = {
       { method: "POST", body: JSON.stringify({ plan_id: planId }) }
     ),
 
+  getLatestPayment: () =>
+    request<{
+      payment_id: string;
+      provider: "platega" | "yookassa" | "btcpay";
+      status: string;
+      amount: number;
+      currency: string;
+      created_at: string;
+    } | null>("/payments/latest"),
+
   admin: {
     listServers: () => request<AdminServer[]>("/admin/servers"),
     createServer: (data: Partial<AdminServer> & { password: string }) =>

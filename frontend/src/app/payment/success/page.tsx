@@ -1,9 +1,71 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { api } from "@/lib/api";
+
+type Verdict = "checking" | "confirmed";
+
+const MAX_ATTEMPTS = 8;
+const POLL_INTERVAL_MS = 1500;
 
 export default function PaymentSuccessPage() {
+  const router = useRouter();
+  const [verdict, setVerdict] = useState<Verdict>("checking");
+
+  useEffect(() => {
+    let cancelled = false;
+    let attempts = 0;
+
+    const check = async () => {
+      attempts += 1;
+      try {
+        const latest = await api.getLatestPayment();
+        if (cancelled) return;
+
+        if (latest?.status === "confirmed") {
+          setVerdict("confirmed");
+          return;
+        }
+
+        const finalStatuses = ["canceled", "failed", "chargebacked"];
+        if (latest && finalStatuses.includes(latest.status)) {
+          router.replace("/dashboard");
+          return;
+        }
+
+        if (attempts >= MAX_ATTEMPTS) {
+          router.replace("/dashboard");
+          return;
+        }
+
+        setTimeout(check, POLL_INTERVAL_MS);
+      } catch {
+        if (cancelled) return;
+        setVerdict("confirmed");
+      }
+    };
+
+    check();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  if (verdict === "checking") {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-6 bg-grid">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-neon-cyan/30 border-t-neon-cyan rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-400 text-sm">Проверяем статус оплаты...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen flex items-center justify-center px-6 bg-grid">
       <motion.div
@@ -12,7 +74,6 @@ export default function PaymentSuccessPage() {
         transition={{ duration: 0.6 }}
         className="text-center max-w-md"
       >
-        {/* Animated checkmark */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
