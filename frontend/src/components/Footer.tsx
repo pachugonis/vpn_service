@@ -48,7 +48,7 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5">
               {[
-                { label: "Настройка", href: "#" },
+                { label: "Настройка", href: "/setup" },
                 { label: "FAQ", href: "/faq" },
                 { label: "Поддержка", href: "/support" },
                 { label: "Контакты", href: "/contacts" },
