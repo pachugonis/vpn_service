@@ -69,13 +69,23 @@ export default function Footer() {
             <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
               Оплата
             </h4>
-            <div className="flex flex-wrap gap-2">
-              {["Visa", "MC", "МИР", "СБП", "BTC"].map((m) => (
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                { label: "Visa", src: "/payment-logos/visa.svg" },
+                { label: "Mastercard", src: "/payment-logos/mastercard.svg" },
+                { label: "МИР", src: "/payment-logos/mir.svg" },
+                { label: "СБП", src: "/payment-logos/sbp.svg" },
+                { label: "Bitcoin", src: "/payment-logos/bitcoin.svg" },
+              ].map((m) => (
                 <span
-                  key={m}
-                  className="text-xs px-2.5 py-1 rounded-md bg-void-700 text-slate-400 border border-white/5"
+                  key={m.label}
+                  className="h-8 w-14 flex items-center justify-center rounded-md bg-white/90 border border-white/5 px-2"
                 >
-                  {m}
+                  <img
+                    src={m.src}
+                    alt={m.label}
+                    className="max-h-5 max-w-full object-contain"
+                  />
                 </span>
               ))}
             </div>
