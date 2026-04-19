@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -451,23 +452,16 @@ export default function Home() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="max-w-3xl mx-auto glass-card p-8 sm:p-10 md:p-14 text-center relative overflow-hidden"
+          className="max-w-3xl mx-auto glass-card relative overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-neon-cyan/[0.03] to-neon-blue/[0.03]" />
-          <div className="relative">
-            <h2 className="font-display font-bold text-2xl md:text-3xl text-white mb-4">
-              Готовы к свободному интернету?
-            </h2>
-            <p className="text-slate-400 mb-8 max-w-md mx-auto">
-              Подключитесь за 2 минуты. Оплатите картой, СБП или биткоином — и
-              получите доступ ко всем серверам.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/pricing" className="btn-solid !px-8 !py-3.5">
-                Начать сейчас
-              </Link>
-            </div>
-          </div>
+          <Image
+            src="/banner-index.png"
+            alt="VPN Banner"
+            width={1280}
+            height={714}
+            className="w-full h-auto"
+            priority
+          />
         </motion.div>
       </section>
 
