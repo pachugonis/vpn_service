@@ -1,0 +1,16 @@
+[Unit]
+Description=VPN service backup (Postgres + config to Yandex Object Storage)
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+Environment=PROJECT_DIR=/opt/vpn_service
+Environment=BACKUP_DIR=/var/backups/vpn
+Environment=RCLONE_REMOTE=yc:vpn-backups
+ExecStart=/opt/vpn_service/scripts/backup/backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+StandardOutput=journal
+StandardError=journal
